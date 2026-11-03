@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 44 Concept Café — вэбсайт
 
-## Getting Started
+Улаанбаатар дахь **44 Concept Café** ([@44.hype](https://www.instagram.com/44.hype/)) кафены вэбсайт.
+Next.js 16 · Tailwind CSS 4 · Motion · Lenis · Supabase.
 
-First, run the development server:
+## Боломжууд
+
+- Хөдөлгөөнт нүүр хуудас: preloader, parallax hero, marquee, scroll-оор гэрэлтэх текст, хэвтээ scroll-той онцлох бүтээгдэхүүн, меню, галерей, байршил
+- Меню ба үнэ: Supabase-ийн `menu_items` хүснэгтээс уншина (холбогдоогүй үед `lib/menu-data.ts`)
+- Бүртгүүлэх / нэвтрэх (Supabase Auth)
+- Ширээ захиалах: өдөр → цаг → мэдээлэл гэсэн 3 алхам. Захиалгаа харах, цуцлах боломжтой (`/account`)
+- Desktop болон mobile-д бүрэн тохирсон. Custom cursor зөвхөн хулганатай төхөөрөмж дээр ажиллана. `prefers-reduced-motion` тохиргоог дагана
+
+## Ажиллуулах
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`.env.local` файлгүй үед сайт **демо горимд** ажиллана. Энэ үед бүртгэл болон захиалга зөвхөн тухайн хөтчийн localStorage-д хадгалагдана.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Supabase холбох
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. [supabase.com](https://supabase.com)-д шинэ project үүсгэнэ (region: Singapore эсвэл Tokyo)
+2. **SQL Editor** → `supabase/schema.sql` файлын агуулгыг хуулж буулгаад **Run** дарна. Хүснэгт, RLS дүрэм болон менюгийн анхны өгөгдөл үүснэ
+3. **Project Settings → API**-аас URL болон publishable key-г хуулна
+4. `.env.example`-ийг `.env.local` нэрээр хуулж, утгуудыг бөглөнө
+5. **Authentication → URL Configuration** хэсэгт Site URL-ээ (жишээ нь `https://44cafe.mn`) болон `http://localhost:3000`-г нэмнэ
 
-## Learn More
+### Менюгийн үнэ өөрчлөх
+Supabase → **Table Editor → menu_items** хэсэгт үнэ, нэр, зургийг шууд засна. Сайт хэдхэн минутын дотор шинэчлэгдэнэ.
 
-To learn more about Next.js, take a look at the following resources:
+### Захиалга баталгаажуулах
+Supabase → **Table Editor → reservations** хэсэгт `status` баганыг `confirmed` болгоно. Дараагийн шатанд admin самбар нэмж болно.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Зураг солих
+`public/images/` доторх зургууд нь Unsplash-ийн **түр** зургууд. Кафены жинхэнэ зургийг ижил нэрээр (`.webp`) сольж тавихад хангалттай.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deploy (Vercel)
+1. GitHub руу push хийнэ
+2. [vercel.com/new](https://vercel.com/new) → repo-гоо import хийнэ
+3. Environment Variables хэсэгт `.env.local`-ийн гурван утгыг нэмнэ → Deploy
+4. Domain: Vercel → Settings → Domains
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Бүтэц
+```
+app/              хуудсууд (/, /login, /signup, /reserve, /account)
+components/home/  нүүр хуудасны хэсгүүд
+components/ui/    анимейшны туслах компонентууд (Reveal, SplitText, Magnetic)
+lib/site.ts       хаяг, утас, цагийн хуваарь, захиалгын дүрэм  ← энд засна
+lib/menu-data.ts  менюгийн нөөц өгөгдөл
+lib/backend.ts    auth + захиалга (Supabase / демо горим)
+supabase/         өгөгдлийн сангийн schema
+```
