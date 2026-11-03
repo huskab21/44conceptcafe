@@ -3,15 +3,15 @@
 
 /* ───────────── 44 Concept Café — design tokens ───────────── */
 :root {
-  --ink: #0c0a08;          /* espresso black – page background */
-  --ink-2: #15120e;        /* raised surface */
-  --ink-3: #1f1a14;        /* cards / inputs */
-  --line: #2e271e;         /* hairlines */
-  --cream: #f2e9d8;        /* primary text */
-  --cream-dim: #b9ad98;    /* secondary text */
-  --muted: #8a7f6e;        /* tertiary text */
-  --gold: #c9a35b;         /* art-deco accent */
-  --gold-soft: #e3c88f;
+  --ink: #120c08;          /* roasted-brown black – page background */
+  --ink-2: #1a120c;        /* raised surface */
+  --ink-3: #24190f;        /* cards / inputs */
+  --line: #36271b;         /* hairlines */
+  --cream: #f4ede3;        /* primary text */
+  --cream-dim: #bfae9b;    /* secondary text */
+  --muted: #8d7b68;        /* tertiary text */
+  --gold: #d9a46c;         /* caramel accent */
+  --gold-soft: #ecc9a0;
   --rose: #d98c7a;         /* gelato accent, used sparingly */
   --danger: #e0715c;
   --success: #8fbf8a;
@@ -32,7 +32,9 @@
   --color-success: var(--success);
 
   --font-sans: var(--font-manrope);
-  --font-display: var(--font-cormorant);
+  --font-display: var(--font-inter-tight);
+  --font-mono: var(--font-jetbrains);
+  --font-script: var(--font-caveat);
   --font-deco: var(--font-unbounded);
 
   --animate-marquee: marquee 40s linear infinite;
@@ -112,6 +114,30 @@ body {
   right: -7px;
   border-bottom: 1px solid;
   border-right: 1px solid;
+}
+
+/* Headline style: bold condensed grotesk, uppercase. A nested <em> becomes a handwritten accent. */
+.font-display {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.035em;
+  line-height: 0.92;
+}
+.font-display em {
+  font-family: var(--font-caveat), cursive;
+  font-style: normal;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--gold-soft);
+}
+
+/* Warm roasted glow behind dark sections */
+.brew-glow {
+  background:
+    radial-gradient(ellipse 60% 55% at 55% 35%, rgb(120 66 30 / 0.55), transparent 70%),
+    radial-gradient(ellipse 40% 40% at 85% 70%, rgb(90 48 20 / 0.35), transparent 70%),
+    var(--ink);
 }
 
 .text-outline {

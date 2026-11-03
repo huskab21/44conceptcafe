@@ -22,7 +22,6 @@ export function MenuSection({ items }: { items: MenuItem[] }) {
 
   return (
     <section id="menu" className="relative scroll-mt-20 py-24 sm:py-32">
-      <div className="deco-rays pointer-events-none absolute inset-x-0 top-0 h-80 rotate-180 opacity-50" aria-hidden />
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
         <div className="text-center">
           <Eyebrow>Menu · Үнийн жагсаалт</Eyebrow>

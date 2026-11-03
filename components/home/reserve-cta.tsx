@@ -20,7 +20,7 @@ export function ReserveCta() {
       >
         <Image src="/images/lattes.webp" alt="" fill sizes="100vw" className="object-cover" />
         <div className="absolute inset-0 bg-ink/75" />
-        <div className="deco-rays absolute inset-x-0 bottom-0 h-full" aria-hidden />
+        
 
         <div className="relative flex flex-col items-center px-6 py-24 text-center sm:py-36">
           <p className="text-xs tracking-[0.4em] text-gold uppercase">Reservation</p>

@@ -99,11 +99,13 @@ export function Magnetic({ children, strength = 0.35 }: { children: ReactNode; s
   );
 }
 
-/** Small uppercase eyebrow with a deco diamond. */
+/** Small monospace label, e.g. "// SPECIALTY COFFEE". */
 export function Eyebrow({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <span className={`inline-flex items-center gap-3 text-[0.7rem] tracking-[0.32em] uppercase text-gold ${className}`}>
-      <span className="size-1.5 rotate-45 bg-gold" aria-hidden />
+    <span className={`inline-flex items-center gap-2 font-mono text-[0.72rem] tracking-[0.12em] text-cream-dim uppercase ${className}`}>
+      <span className="text-gold" aria-hidden>
+        {"//"}
+      </span>
       {children}
     </span>
   );

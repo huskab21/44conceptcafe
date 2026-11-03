@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Manrope, Unbounded } from "next/font/google";
+import { Caveat, Inter_Tight, JetBrains_Mono, Manrope, Unbounded } from "next/font/google";
 import { Cursor } from "@/components/cursor";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
@@ -10,12 +10,9 @@ import { site } from "@/lib/site";
 import "./globals.css";
 
 const manrope = Manrope({ variable: "--font-manrope", subsets: ["latin", "cyrillic"] });
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
-  subsets: ["latin", "cyrillic"],
-  weight: ["400", "500", "600"],
-  style: ["normal", "italic"],
-});
+const interTight = Inter_Tight({ variable: "--font-inter-tight", subsets: ["latin", "cyrillic"], weight: ["500", "700", "800"] });
+const mono = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["latin", "cyrillic"], weight: ["400", "500"] });
+const caveat = Caveat({ variable: "--font-caveat", subsets: ["latin", "cyrillic"], weight: ["500", "700"] });
 const unbounded = Unbounded({ variable: "--font-unbounded", subsets: ["latin", "cyrillic"], weight: ["400", "600"] });
 
 export const metadata: Metadata = {
@@ -36,12 +33,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0c0a08",
+  themeColor: "#120c08",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="mn" className={`${manrope.variable} ${cormorant.variable} ${unbounded.variable}`}>
+    <html lang="mn" className={`${manrope.variable} ${interTight.variable} ${mono.variable} ${caveat.variable} ${unbounded.variable}`}>
       <body className="min-h-svh">
         <MotionProvider>
           <AuthProvider>

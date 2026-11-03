@@ -14,7 +14,7 @@ export default async function Home() {
 
   return (
     <main>
-      <Hero />
+      <Hero featured={signature[0]} />
       <Marquee />
       <About />
       {signature.length > 0 && <Signature items={signature} />}
