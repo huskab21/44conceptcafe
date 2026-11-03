@@ -1,122 +1,92 @@
 "use client";
 
 import Image from "next/image";
-import { motion, useScroll, useTransform } from "motion/react";
-import { useEffect, useRef, useState } from "react";
-import { Eyebrow } from "@/components/ui/motion";
+import { motion, useMotionTemplate, useMotionValue, useSpring, useTransform } from "motion/react";
+import { Eyebrow, Reveal } from "@/components/ui/motion";
 import type { MenuItem } from "@/lib/menu-data";
 import { formatPrice } from "@/lib/site";
 
-function Card({ item, index }: { item: MenuItem; index: number }) {
+/** Product card that leans toward the cursor with a moving glare. */
+function TiltCard({ item, index }: { item: MenuItem; index: number }) {
+  const px = useMotionValue(0.5);
+  const py = useMotionValue(0.5);
+  const sx = useSpring(px, { stiffness: 160, damping: 18 });
+  const sy = useSpring(py, { stiffness: 160, damping: 18 });
+  const rotateY = useTransform(sx, [0, 1], [-14, 14]);
+  const rotateX = useTransform(sy, [0, 1], [12, -12]);
+  const glareX = useTransform(sx, [0, 1], ["0%", "100%"]);
+  const glareY = useTransform(sy, [0, 1], ["0%", "100%"]);
+  const glare = useMotionTemplate`radial-gradient(circle at ${glareX} ${glareY}, rgba(255,255,255,0.22), transparent 55%)`;
+
   return (
-    <article
-      className="group relative w-[78vw] shrink-0 snap-center sm:w-[46vw] lg:w-auto"
-      data-cursor="Амтлах"
-    >
-      <div className="relative aspect-[3/4] overflow-hidden rounded-[2rem] rounded-t-[999px] border border-line lg:aspect-auto lg:h-[min(62vh,620px)] lg:w-[min(46.5vh,465px)]">
-        <Image
-          src={item.image}
-          alt={item.name}
-          fill
-          sizes="(min-width: 1024px) 480px, (min-width: 640px) 46vw, 78vw"
-          className="object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-110"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/10 to-transparent" />
-        <span className="absolute top-[22%] left-1/2 -translate-x-1/2 font-deco text-xs tracking-[0.3em] text-cream/80">
-          N°{String(index + 1).padStart(2, "0")}
-        </span>
-        <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
-          <p className="text-xs tracking-[0.25em] text-gold uppercase">{item.name_en}</p>
-          <h3 className="mt-2 font-display text-3xl text-cream sm:text-4xl">{item.name}</h3>
-          <p className="mt-2 text-sm text-cream-dim">{item.description}</p>
-          <p className="mt-4 inline-block rounded-full border border-gold/50 px-4 py-1.5 font-semibold text-gold tabular-nums">
-            {formatPrice(item.price)}
-          </p>
+    <Reveal delay={index * 0.08} className="[perspective:1000px]">
+      <motion.article
+        onPointerMove={(e) => {
+          if (e.pointerType !== "mouse") return;
+          const r = e.currentTarget.getBoundingClientRect();
+          px.set((e.clientX - r.left) / r.width);
+          py.set((e.clientY - r.top) / r.height);
+        }}
+        onPointerLeave={() => {
+          px.set(0.5);
+          py.set(0.5);
+        }}
+        style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+        className="group relative flex h-full flex-col overflow-hidden border border-white/10 bg-ink-2"
+        data-cursor="44"
+      >
+        <div className="relative aspect-[4/5] overflow-hidden">
+          <Image
+            src={item.image}
+            alt={item.name}
+            fill
+            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 45vw, 80vw"
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink-2 via-transparent to-transparent" />
+          <span className="absolute top-4 left-4 font-mono text-[0.65rem] tracking-widest text-cream/80 uppercase">
+            {`// N°${String(index + 1).padStart(2, "0")}`}
+          </span>
         </div>
-      </div>
-    </article>
+        <div className="relative flex flex-1 flex-col p-5" style={{ transform: "translateZ(40px)" }}>
+          <p className="font-mono text-[0.65rem] tracking-widest text-gold uppercase">{item.name_en}</p>
+          <h3 className="mt-2 font-display text-2xl text-cream">{item.name}</h3>
+          <p className="mt-2 text-sm text-cream-dim">{item.description}</p>
+          <div className="mt-auto flex items-center justify-between border-t border-white/10 pt-4">
+            <span className="font-mono text-cream tabular-nums">{formatPrice(item.price)}</span>
+            <span className="grid size-8 place-items-center border border-white/20 text-cream transition-colors group-hover:bg-cream group-hover:text-ink">
+              +
+            </span>
+          </div>
+        </div>
+        <motion.div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: glare }} />
+      </motion.article>
+    </Reveal>
   );
 }
 
-/** Desktop: pinned section that scrolls horizontally. Touch/mobile: native swipe carousel. */
 export function Signature({ items }: { items: MenuItem[] }) {
-  const ref = useRef<HTMLElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [distance, setDistance] = useState(0);
-  const [pinned, setPinned] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px) and (prefers-reduced-motion: no-preference)");
-    const measure = () => {
-      setPinned(mq.matches);
-      if (trackRef.current) setDistance(Math.max(0, trackRef.current.scrollWidth - window.innerWidth));
-    };
-    measure();
-    mq.addEventListener("change", measure);
-    window.addEventListener("resize", measure);
-    return () => {
-      mq.removeEventListener("change", measure);
-      window.removeEventListener("resize", measure);
-    };
-  }, [items.length]);
-
-  // The track only exists in the pinned layout, so measure again once it renders.
-  useEffect(() => {
-    if (pinned && trackRef.current) {
-      setDistance(Math.max(0, trackRef.current.scrollWidth - window.innerWidth));
-    }
-  }, [pinned]);
-
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const x = useTransform(scrollYProgress, [0, 1], [0, -distance]);
-  const progressWidth = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
-
-  const heading = (
-    <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 sm:px-6 md:flex-row md:items-end md:justify-between">
-      <div>
-        <Eyebrow>Signature</Eyebrow>
-        <h2 className="mt-5 font-display text-5xl leading-none text-cream sm:text-7xl">
-          Онцлох <em className="text-gold">амтууд</em>
-        </h2>
-      </div>
-      <p className="max-w-sm text-cream-dim">
-        Зөвхөн 44-т л байдаг жорууд. Бариста маань улирал бүр шинэ амт нэмдэг.
-      </p>
-    </div>
-  );
-
-  if (!pinned) {
-    return (
-      <section className="py-20 sm:py-28" aria-label="Онцлох амтууд">
-        {heading}
-        <div className="no-scrollbar mt-12 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-4 sm:px-6" data-lenis-prevent-wheel>
-          {items.map((item, i) => (
-            <Card key={item.id} item={item} index={i} />
-          ))}
-          <div className="w-1 shrink-0" aria-hidden />
-        </div>
-      </section>
-    );
-  }
-
   return (
-    <section ref={ref} className="relative" style={{ height: `calc(100vh + ${distance}px)` }} aria-label="Онцлох амтууд">
-      <div className="sticky top-0 flex h-screen flex-col justify-center overflow-hidden pt-16">
-        {heading}
-        <motion.div ref={trackRef} style={{ x }} className="mt-10 flex w-max gap-8 px-6 pr-[10vw]">
-          {items.map((item, i) => (
-            <Card key={item.id} item={item} index={i} />
-          ))}
-          <div className="flex w-[28vw] shrink-0 items-center justify-center">
-            <p className="text-center font-display text-5xl text-outline">
-              Илүү ихийг
-              <br />
-              менюнээс ↓
-            </p>
+    <section className="py-24 sm:py-32" aria-label="Онцлох амтууд">
+      <div className="mx-auto max-w-[1400px] px-5 sm:px-8 lg:px-10">
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div>
+            <Eyebrow>Signature · Зөвхөн 44-т</Eyebrow>
+            <h2 className="mt-6 font-display text-6xl text-cream sm:text-8xl">
+              Онцлох <em>амтууд</em>
+            </h2>
           </div>
-        </motion.div>
-        <div className="mx-auto mt-8 h-px w-[min(80rem,90vw)] bg-line">
-          <motion.div style={{ width: progressWidth }} className="h-full bg-gold" />
+          <p className="max-w-xs text-sm font-bold tracking-tight text-cream-dim uppercase">
+            Бариста маань улирал бүр шинэ жор нэмдэг. Эдгээр нь одоогийн шилдгүүд.
+          </p>
+        </div>
+
+        <div className="no-scrollbar -mx-5 mt-14 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-4 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-4 lg:gap-5">
+          {items.slice(0, 4).map((item, i) => (
+            <div key={item.id} className="w-[78vw] shrink-0 snap-center sm:w-auto">
+              <TiltCard item={item} index={i} />
+            </div>
+          ))}
         </div>
       </div>
     </section>

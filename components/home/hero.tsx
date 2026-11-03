@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { BagMockup, CupMockup } from "@/components/home/mockups";
 import { Eyebrow } from "@/components/ui/motion";
 import type { MenuItem } from "@/lib/menu-data";
+import { useMediaQuery } from "@/lib/use-media-query";
 import { formatPrice } from "@/lib/site";
 
 const INTRO = 1.9; // seconds – waits for the preloader curtain
@@ -41,6 +42,30 @@ function TypedWord() {
       {word.slice(0, length)}
       <span className="ml-1 inline-block h-[0.8em] w-[3px] animate-pulse bg-gold-soft align-middle" aria-hidden />
     </span>
+  );
+}
+
+/** Lets the visitor grab a product, toss it around and spin it; it springs back home on release. */
+function Grabbable({ children }: { children: React.ReactNode }) {
+  const spin = useMotionValue(0);
+  const rotateY = useSpring(spin, { stiffness: 120, damping: 14 });
+  // Only for mouse/trackpad, so touch users can still scroll past the hero.
+  const canGrab = useMediaQuery("(hover: hover) and (pointer: fine)");
+  return (
+    <motion.div
+      drag={canGrab}
+      dragSnapToOrigin
+      dragElastic={0.35}
+      dragTransition={{ bounceStiffness: 220, bounceDamping: 16 }}
+      onDrag={(_, info) => spin.set(info.offset.x * 0.6)}
+      onDragEnd={() => spin.set(0)}
+      whileDrag={{ scale: 1.06 }}
+      style={{ rotateY, transformPerspective: 900 }}
+      className={canGrab ? "cursor-grab active:cursor-grabbing" : undefined}
+      data-cursor="Барих"
+    >
+      {children}
+    </motion.div>
   );
 }
 
@@ -134,9 +159,11 @@ export function Hero({ featured }: { featured?: MenuItem }) {
             transition={{ delay: INTRO + 0.15, duration: 1.4, ease }}
             className="absolute top-[4%] right-[-6%] w-[62%] sm:right-0 lg:right-[-4%] lg:w-[64%]"
           >
-            <motion.div animate={{ y: [0, -10, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}>
-              <BagMockup className="w-full drop-shadow-[0_40px_60px_rgba(0,0,0,0.55)]" />
-            </motion.div>
+            <Grabbable>
+              <motion.div animate={{ y: [0, -10, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}>
+                <BagMockup className="w-full drop-shadow-[0_40px_60px_rgba(0,0,0,0.55)]" />
+              </motion.div>
+            </Grabbable>
           </motion.div>
 
           <motion.div
@@ -146,9 +173,11 @@ export function Hero({ featured }: { featured?: MenuItem }) {
             transition={{ delay: INTRO + 0.3, duration: 1.4, ease }}
             className="absolute bottom-[2%] left-[2%] w-[44%] sm:left-[10%] lg:left-[0%] lg:w-[42%]"
           >
-            <motion.div animate={{ y: [0, -14, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}>
-              <CupMockup className="w-full drop-shadow-[0_40px_60px_rgba(0,0,0,0.6)]" />
-            </motion.div>
+            <Grabbable>
+              <motion.div animate={{ y: [0, -14, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}>
+                <CupMockup className="w-full drop-shadow-[0_40px_60px_rgba(0,0,0,0.6)]" />
+              </motion.div>
+            </Grabbable>
           </motion.div>
 
           {featured && (

@@ -1,6 +1,7 @@
 import { About } from "@/components/home/about";
 import { Gallery } from "@/components/home/gallery";
 import { Hero } from "@/components/home/hero";
+import { HoursClock } from "@/components/home/hours-clock";
 import { Marquee } from "@/components/home/marquee";
 import { MenuSection } from "@/components/home/menu-section";
 import { ReserveCta } from "@/components/home/reserve-cta";
@@ -19,6 +20,7 @@ export default async function Home() {
       <About />
       {signature.length > 0 && <Signature items={signature} />}
       <MenuSection items={menu} />
+      <HoursClock />
       <Gallery />
       <ReserveCta />
       <Visit />

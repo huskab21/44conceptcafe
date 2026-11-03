@@ -1,78 +1,119 @@
 "use client";
 
-import Image from "next/image";
 import { motion, useScroll, useTransform, type MotionValue } from "motion/react";
 import { useRef } from "react";
+import { CupMockup } from "@/components/home/mockups";
 import { Eyebrow, Reveal } from "@/components/ui/motion";
 
-const statement =
-  "44 бол зүгээр нэг кафе биш. Энэ бол Art Deco-гийн алтан шугам, шинэхэн шарсан кофены үнэр, гараар хийсэн желатогийн амт, урлагийн хувцас нийлсэн орон зай юм.";
-
-function Word({ children, progress, range }: { children: string; progress: MotionValue<number>; range: [number, number] }) {
-  const opacity = useTransform(progress, range, [0.15, 1]);
+/** A single roasted coffee bean. */
+function Bean({ className }: { className?: string }) {
   return (
-    <span className="relative mr-[0.25em] inline-block">
-      <motion.span style={{ opacity }}>{children}</motion.span>
-    </span>
+    <svg viewBox="0 0 40 56" className={className} aria-hidden>
+      <defs>
+        <radialGradient id="bean" cx="35%" cy="30%" r="80%">
+          <stop offset="0" stopColor="#8a5530" />
+          <stop offset="0.55" stopColor="#4b2a15" />
+          <stop offset="1" stopColor="#24130a" />
+        </radialGradient>
+      </defs>
+      <ellipse cx="20" cy="28" rx="18" ry="26" fill="url(#bean)" />
+      <path d="M20 4 C 12 18, 28 36, 20 52" stroke="#1a0d06" strokeWidth="3" fill="none" strokeLinecap="round" />
+      <ellipse cx="13" cy="16" rx="4" ry="8" fill="#fff" opacity="0.08" />
+    </svg>
+  );
+}
+
+// Deterministic layout so server and client render identically.
+const beans = [
+  { x: 8, y: 12, s: 46, r: 20, d: 7, depth: 0.6 },
+  { x: 22, y: 68, s: 34, r: -40, d: 9, depth: 0.3 },
+  { x: 38, y: 6, s: 26, r: 70, d: 8, depth: 0.2 },
+  { x: 74, y: 10, s: 54, r: -15, d: 10, depth: 0.8 },
+  { x: 88, y: 42, s: 30, r: 110, d: 7.5, depth: 0.35 },
+  { x: 80, y: 78, s: 44, r: 35, d: 9.5, depth: 0.7 },
+  { x: 54, y: 88, s: 24, r: -80, d: 8.5, depth: 0.25 },
+  { x: 4, y: 44, s: 28, r: 140, d: 11, depth: 0.4 },
+  { x: 60, y: 30, s: 20, r: 10, d: 6.5, depth: 0.15 },
+  { x: 30, y: 36, s: 18, r: -120, d: 7, depth: 0.1 },
+  { x: 94, y: 16, s: 22, r: 60, d: 9, depth: 0.2 },
+  { x: 16, y: 90, s: 38, r: -10, d: 10.5, depth: 0.55 },
+];
+
+function FloatingBean({ b, progress }: { b: (typeof beans)[number]; progress: MotionValue<number> }) {
+  const y = useTransform(progress, [0, 1], [`${b.depth * 160}px`, `${-b.depth * 160}px`]);
+  return (
+    <motion.div
+      className="absolute"
+      style={{ left: `${b.x}%`, top: `${b.y}%`, width: b.s, y, filter: b.depth < 0.25 ? "blur(1.5px)" : undefined }}
+    >
+      <motion.div
+        animate={{ y: [0, -18, 0], rotate: [b.r, b.r + 25, b.r] }}
+        transition={{ duration: b.d, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <Bean className="w-full drop-shadow-[0_12px_18px_rgba(0,0,0,0.5)]" />
+      </motion.div>
+    </motion.div>
   );
 }
 
 const stats = [
-  { value: "44", label: "Онцгой жор" },
   { value: "18ц", label: "Cold brew исгэлт" },
+  { value: "250г", label: "Жижиг багц шаралт" },
   { value: "100%", label: "Өдөр бүр шинэ желато" },
 ];
 
 export function About() {
-  const textRef = useRef<HTMLParagraphElement>(null);
-  const { scrollYProgress } = useScroll({ target: textRef, offset: ["start 85%", "end 45%"] });
-
-  const imgRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress: imgProgress } = useScroll({ target: imgRef, offset: ["start end", "end start"] });
-  const y1 = useTransform(imgProgress, [0, 1], ["10%", "-10%"]);
-  const y2 = useTransform(imgProgress, [0, 1], ["-5%", "15%"]);
-
-  const words = statement.split(" ");
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const cupRotate = useTransform(scrollYProgress, [0, 1], [-24, -6]);
+  const cupY = useTransform(scrollYProgress, [0, 1], ["12%", "-12%"]);
 
   return (
-    <section id="about" className="relative scroll-mt-24 py-24 sm:py-36">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <Eyebrow>Бидний тухай · About</Eyebrow>
+    <section id="about" ref={ref} className="relative scroll-mt-20 overflow-hidden py-24 sm:py-32">
+      <div className="mx-auto grid max-w-[1400px] items-center gap-16 px-5 sm:px-8 lg:grid-cols-12 lg:px-10">
+        <div className="lg:col-span-5">
+          <Eyebrow>Бидний тухай · About</Eyebrow>
+          <Reveal>
+            <h2 className="mt-6 font-display text-6xl text-cream sm:text-7xl xl:text-8xl">
+              Жингүй
+              <br />
+              <em>хөнгөн</em> өглөө
+            </h2>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <p className="mt-8 max-w-md text-sm leading-relaxed font-bold tracking-tight text-cream uppercase">
+              44 бол зүгээр нэг кафе биш. Шинэхэн шарсан үр, гараар хийсэн желато, урлагийн хувцас нэг дор уулзсан
+              орон зай.
+            </p>
+            <p className="mt-5 max-w-md text-cream-dim">
+              Ажлын уулзалт, найзуудтайгаа өнгөрүүлэх орой, эсвэл ганцаараа ном уншиж суух — танд зориулсан ширээ
+              үргэлж бий.
+            </p>
+          </Reveal>
 
-        <p ref={textRef} className="mt-10 max-w-5xl font-display text-[2rem] leading-[1.15] text-cream sm:text-5xl lg:text-6xl">
-          {words.map((w, i) => (
-            <Word key={i} progress={scrollYProgress} range={[i / words.length, (i + 1) / words.length]}>
-              {w}
-            </Word>
+          <dl className="mt-12 grid grid-cols-3 gap-4 border-t border-line pt-8">
+            {stats.map((s, i) => (
+              <Reveal key={s.label} delay={0.15 + i * 0.08}>
+                <dt className="font-display text-3xl text-cream sm:text-4xl">{s.value}</dt>
+                <dd className="mt-2 font-mono text-[0.65rem] leading-snug tracking-wide text-cream-dim uppercase">{s.label}</dd>
+              </Reveal>
+            ))}
+          </dl>
+        </div>
+
+        <div className="relative h-[70vh] min-h-[420px] lg:col-span-7">
+          <div className="brew-glow absolute inset-[10%] rounded-full blur-2xl" aria-hidden />
+          {beans.map((b, i) => (
+            <FloatingBean key={i} b={b} progress={scrollYProgress} />
           ))}
-        </p>
-
-        <div ref={imgRef} className="mt-20 grid gap-6 sm:mt-28 md:grid-cols-12">
-          <motion.div style={{ y: y1 }} className="relative aspect-[4/5] overflow-hidden rounded-3xl md:col-span-5" data-cursor="Vibe">
-            <Image src="/images/interior.webp" alt="Кафены дотор орчин" fill sizes="(min-width: 768px) 40vw, 100vw" className="object-cover transition-transform duration-[1.5s] hover:scale-105" />
-          </motion.div>
-
-          <div className="flex flex-col justify-between gap-10 md:col-span-6 md:col-start-7">
-            <motion.div style={{ y: y2 }} className="relative aspect-[16/10] overflow-hidden rounded-3xl">
-              <Image src="/images/pourover.webp" alt="Пур овер кофе бэлдэж буй нь" fill sizes="(min-width: 768px) 45vw, 100vw" className="object-cover" />
+          <motion.div
+            style={{ rotate: cupRotate, y: cupY }}
+            className="absolute top-1/2 left-1/2 w-[46%] max-w-[300px] -translate-x-1/2 -translate-y-1/2"
+          >
+            <motion.div animate={{ y: [0, -12, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}>
+              <CupMockup className="w-full drop-shadow-[0_50px_70px_rgba(0,0,0,0.65)]" />
             </motion.div>
-
-            <Reveal>
-              <p className="max-w-md leading-relaxed text-cream-dim">
-                Бид үр бүрийг анхааралтай сонгож, жижиг багцаар шарж, бариста бүр гараараа бэлддэг. Ажлын уулзалт,
-                найзуудтайгаа өнгөрүүлэх орой, эсвэл ганцаараа ном уншиж суух — танд зориулсан ширээ үргэлж бий.
-              </p>
-            </Reveal>
-
-            <dl className="grid grid-cols-3 gap-4 border-t border-line pt-8">
-              {stats.map((s, i) => (
-                <Reveal key={s.label} delay={i * 0.1}>
-                  <dt className="font-deco text-3xl text-gold sm:text-4xl">{s.value}</dt>
-                  <dd className="mt-2 text-xs leading-snug text-cream-dim sm:text-sm">{s.label}</dd>
-                </Reveal>
-              ))}
-            </dl>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
