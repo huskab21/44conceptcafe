@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { motion, useMotionTemplate, useMotionValue, useSpring, useTransform } from "motion/react";
+import { motion, useMotionTemplate, useMotionValue, useMotionValueEvent, useScroll, useSpring, useTransform } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 import { Eyebrow, Reveal } from "@/components/ui/motion";
 import type { MenuItem } from "@/lib/menu-data";
 import { formatPrice } from "@/lib/site";
@@ -35,7 +36,7 @@ function TiltCard({ item, index }: { item: MenuItem; index: number }) {
         className="group relative flex h-full flex-col overflow-hidden border border-white/10 bg-ink-2"
         data-cursor="44"
       >
-        <div className="relative aspect-[4/5] overflow-hidden">
+        <div className="relative aspect-[4/3.6] overflow-hidden">
           <Image
             src={item.image}
             alt={item.name}
@@ -65,28 +66,83 @@ function TiltCard({ item, index }: { item: MenuItem; index: number }) {
   );
 }
 
+/** Featured drinks & bites on a horizontal track that scrolls sideways while the section is pinned. */
 export function Signature({ items }: { items: MenuItem[] }) {
+  const section = useRef<HTMLElement>(null);
+  const track = useRef<HTMLDivElement>(null);
+  const [distance, setDistance] = useState(0);
+
+  // How far the track must travel = its overflow past the viewport.
+  useEffect(() => {
+    const el = track.current;
+    if (!el) return;
+    const measure = () => setDistance(Math.max(0, el.scrollWidth - window.innerWidth));
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    window.addEventListener("resize", measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, []);
+
+  const { scrollYProgress } = useScroll({ target: section, offset: ["start start", "end end"] });
+  const x = useTransform(scrollYProgress, (p) => -p * distance);
+  const smoothX = useSpring(x, { stiffness: 120, damping: 26, mass: 0.4 });
+  const bar = useTransform(scrollYProgress, [0, 1], [0.04, 1]);
+  const [count, setCount] = useState(1);
+  useMotionValueEvent(scrollYProgress, "change", (p) => setCount(Math.min(items.length, Math.max(1, Math.round(p * (items.length - 1)) + 1))));
+
   return (
-    <section className="py-24 sm:py-32" aria-label="Онцлох амтууд">
-      <div className="mx-auto max-w-[1400px] px-5 sm:px-8 lg:px-10">
-        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+    <section
+      ref={section}
+      aria-label="Онцлох амтууд"
+      className="relative"
+      style={{ height: `calc(100svh + ${distance}px)` }}
+    >
+      <div className="sticky top-0 flex h-[100svh] flex-col justify-center overflow-hidden py-20">
+        <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 px-5 sm:px-8 md:flex-row md:items-end md:justify-between lg:px-10">
           <div>
             <Eyebrow>Signature · Зөвхөн 44-т</Eyebrow>
             <h2 className="mt-6 font-display text-6xl text-cream sm:text-8xl">
-              Онцлох <em>амтууд</em>
+              Онцлох <span className="text-gold-soft">амтууд</span>
             </h2>
           </div>
-          <p className="max-w-xs text-sm font-bold tracking-tight text-cream-dim uppercase">
-            Бариста маань улирал бүр шинэ жор нэмдэг. Эдгээр нь одоогийн шилдгүүд.
-          </p>
+          <div className="flex items-end gap-8">
+            <p className="max-w-xs text-sm font-bold tracking-tight text-cream-dim uppercase">
+              Бариста маань улирал бүр шинэ жор нэмдэг. Гүйлгээд бүгдийг нь үзээрэй →
+            </p>
+            <p className="hidden font-mono text-xs tracking-widest text-cream-dim tabular-nums sm:block">
+              <span className="text-cream">{String(count).padStart(2, "0")}</span> / {String(items.length).padStart(2, "0")}
+            </p>
+          </div>
         </div>
 
-        <div className="no-scrollbar -mx-5 mt-14 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-4 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-4 lg:gap-5">
-          {items.slice(0, 4).map((item, i) => (
-            <div key={item.id} className="w-[78vw] shrink-0 snap-center sm:w-auto">
+        <motion.div ref={track} style={{ x: smoothX }} className="mt-12 flex w-max gap-4 px-5 will-change-transform sm:px-8 lg:gap-5 lg:px-10">
+          {items.map((item, i) => (
+            <div key={item.id} className="w-[72vw] shrink-0 sm:w-[44vw] lg:w-[24vw] xl:w-[21vw]">
               <TiltCard item={item} index={i} />
             </div>
           ))}
+          {/* closing card */}
+          <a
+            href="#menu"
+            className="group flex w-[60vw] shrink-0 flex-col justify-between border border-white/10 p-6 sm:w-[30vw] lg:w-[18vw]"
+          >
+            <span className="font-mono text-[0.65rem] tracking-widest text-cream-dim uppercase">{"// Бүтэн меню"}</span>
+            <span className="font-display text-4xl text-cream transition-colors group-hover:text-gold-soft">
+              Бүгдийг
+              <br />
+              үзэх ↗
+            </span>
+          </a>
+        </motion.div>
+
+        <div className="mx-auto mt-10 w-full max-w-[1400px] px-5 sm:px-8 lg:px-10">
+          <div className="h-px w-full bg-white/10">
+            <motion.div style={{ scaleX: bar }} className="h-px origin-left bg-gold" />
+          </div>
         </div>
       </div>
     </section>

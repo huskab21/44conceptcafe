@@ -1,54 +1,9 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "motion/react";
+import Image from "next/image";
+import { motion, useMotionValue, useScroll, useSpring, useTransform } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { Eyebrow } from "@/components/ui/motion";
-import { site } from "@/lib/site";
-
-/** Tall iced latte glass – espresso, milk, ice and a straw. */
-function IcedLatte({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 160 300" className={className} aria-hidden>
-      <defs>
-        <clipPath id="glass">
-          <path d="M22 40 H138 L126 286 Q80 292 34 286 Z" />
-        </clipPath>
-        <linearGradient id="latte" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#f3e7d4" />
-          <stop offset="0.35" stopColor="#e2c7a2" />
-          <stop offset="0.6" stopColor="#a26a3c" />
-          <stop offset="1" stopColor="#3d200e" />
-        </linearGradient>
-        <linearGradient id="glass-shine" x1="0" x2="1">
-          <stop offset="0" stopColor="#fff" stopOpacity="0.35" />
-          <stop offset="0.2" stopColor="#fff" stopOpacity="0.05" />
-          <stop offset="0.85" stopColor="#fff" stopOpacity="0.02" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0.25" />
-        </linearGradient>
-      </defs>
-      {/* straw */}
-      <rect x="92" y="0" width="10" height="200" rx="5" fill="#d9a46c" transform="rotate(12 97 100)" />
-      <g clipPath="url(#glass)">
-        <rect x="0" y="70" width="160" height="230" fill="url(#latte)" />
-        {/* swirl */}
-        <path d="M30 150 C 60 130, 90 175, 130 150 C 100 185, 60 165, 30 190 Z" fill="#7a4520" opacity="0.55" />
-        {/* ice cubes */}
-        {[
-          [36, 58, -12],
-          [80, 64, 18],
-          [52, 98, 8],
-          [96, 104, -20],
-        ].map(([x, y, r], i) => (
-          <rect key={i} x={x} y={y} width="34" height="32" rx="6" fill="#fff" opacity="0.45" stroke="#fff" strokeOpacity="0.7" transform={`rotate(${r} ${x + 17} ${y + 16})`} />
-        ))}
-        <rect x="0" y="0" width="160" height="300" fill="url(#glass-shine)" />
-      </g>
-      {/* glass outline + rim */}
-      <path d="M22 40 H138 L126 286 Q80 292 34 286 Z" fill="none" stroke="#fff" strokeOpacity="0.55" strokeWidth="2" />
-      <ellipse cx="80" cy="40" rx="58" ry="6" fill="none" stroke="#fff" strokeOpacity="0.6" strokeWidth="2" />
-    </svg>
-  );
-}
+import { Typewriter } from "@/components/ui/typewriter";
 
 const TZ = "Asia/Ulaanbaatar";
 
@@ -85,93 +40,172 @@ function useUBTime() {
   return now;
 }
 
-/** Opening hours as a clock face; the iced latte turns like a hand as you scroll. */
+/* Clock face geometry, in a 1000×1000 viewBox (R = 500). */
+const C = 500;
+const TICK_OUT = 473;
+const TICK_IN_MAJOR = 430;
+const TICK_IN_MINOR = 452;
+const NUM_R = 355;
+
+function polar(r: number, deg: number) {
+  const a = ((deg - 90) * Math.PI) / 180;
+  // Rounded so server and client render identical attributes (float trig can differ in the last digit).
+  const round = (n: number) => Math.round(n * 100) / 100;
+  return [round(C + r * Math.cos(a)), round(C + r * Math.sin(a))] as const;
+}
+
+function ClockFace() {
+  return (
+    <svg viewBox="0 0 1000 1000" className="absolute inset-0 h-full w-full" aria-hidden>
+      <circle cx={C} cy={C} r={500} fill="#f6f6f4" />
+      {Array.from({ length: 60 }, (_, i) => {
+        const major = i % 5 === 0;
+        const [x1, y1] = polar(TICK_OUT, i * 6);
+        const [x2, y2] = polar(major ? TICK_IN_MAJOR : TICK_IN_MINOR, i * 6);
+        return (
+          <line
+            key={i}
+            x1={x1}
+            y1={y1}
+            x2={x2}
+            y2={y2}
+            stroke="#141414"
+            strokeWidth={major ? 4.4 : 2.2}
+            strokeLinecap="butt"
+          />
+        );
+      })}
+      {Array.from({ length: 12 }, (_, i) => {
+        const n = i + 1;
+        const [x, y] = polar(NUM_R, n * 30);
+        return (
+          <text
+            key={n}
+            x={x}
+            y={y}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill="#161616"
+            fontSize={66}
+            fontWeight={400}
+            style={{ fontFamily: "var(--font-inter-tight), sans-serif", letterSpacing: "-0.02em" }}
+          >
+            {n}
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
+
+/** The straw doubles as the minute hand. Drawn pointing to 12 and rotated about the clock centre. */
+function Straw() {
+  return (
+    <svg viewBox="0 0 1000 1000" className="absolute inset-0 h-full w-full" aria-hidden>
+      <defs>
+        <linearGradient id="straw" x1="0" x2="1">
+          <stop offset="0" stopColor="#000" />
+          <stop offset="0.35" stopColor="#2a2a2a" />
+          <stop offset="0.55" stopColor="#0c0c0c" />
+          <stop offset="1" stopColor="#000" />
+        </linearGradient>
+      </defs>
+      <rect x={C - 11} y={C - 392} width={22} height={392} rx={4} fill="url(#straw)" />
+      {/* cut tip */}
+      <ellipse cx={C} cy={C - 392} rx={11} ry={3.5} fill="#3a3a3a" />
+    </svg>
+  );
+}
+
+/** Opening hours as a clock: the iced latte sits in the middle and its straw tells the time. */
 export function HoursClock() {
   const ref = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const rotate = useTransform(scrollYProgress, [0, 1], [-150, 210]);
   const now = useUBTime();
 
   // Open 08:00–22:00 weekdays, 10:00–22:00 weekend (matches site.hours)
   const isOpen = now ? now.h >= (now.weekend ? 10 : 8) && now.h < 22 : null;
-
-  const hourAngle = now ? ((now.h % 12) + now.m / 60) * 30 : 0;
   const minuteAngle = now ? (now.m + now.s / 60) * 6 : 0;
 
+  // Scrolling sweeps the straw round; it settles on the real time mid-section.
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const sweep = useTransform(scrollYProgress, [0, 0.5, 1], [-300, 0, 300]);
+  const sweepSmooth = useSpring(sweep, { stiffness: 70, damping: 20 });
+  const minute = useMotionValue(0);
+  useEffect(() => minute.set(minuteAngle), [minute, minuteAngle]);
+  const straw = useTransform(() => sweepSmooth.get() + minute.get());
+  const scriptX = useTransform(scrollYProgress, [0, 1], ["-6%", "6%"]);
+  const cupY = useTransform(scrollYProgress, [0, 1], ["4%", "-4%"]);
+
+  const clock = now ? `${String(now.h).padStart(2, "0")}:${String(now.m).padStart(2, "0")}` : "--:--";
+
   return (
-    <section ref={ref} className="relative overflow-hidden py-24 sm:py-32" aria-label="Цагийн хуваарь">
-      <div className="mx-auto grid max-w-[1400px] items-center gap-16 px-5 sm:px-8 lg:grid-cols-12 lg:px-10">
-        <div className="order-2 lg:order-1 lg:col-span-5">
-          <Eyebrow>Цагийн хуваарь · Hours</Eyebrow>
-          <h2 className="mt-6 font-display text-6xl text-cream sm:text-8xl">
-            Цаг <em>бүр</em>
-            <br />
-            кофены цаг
-          </h2>
+    <section ref={ref} className="relative overflow-hidden bg-[#efefed] text-[#151515]" aria-label="Цагийн хуваарь ба байршил">
+      {/* Giant script mark in the background */}
+      <motion.span
+        style={{ x: scriptX }}
+        className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[54%] -rotate-[8deg] font-script text-[78vw] leading-none whitespace-nowrap text-[#e4e3e0] select-none lg:text-[64vw]"
+        aria-hidden
+      >
+        44
+      </motion.span>
 
-          <ul className="mt-10 border-t border-line">
-            {site.hours.map((h) => (
-              <li key={h.days} className="flex items-center justify-between border-b border-line py-5">
-                <span className="font-mono text-xs tracking-widest text-cream-dim uppercase">{h.days}</span>
-                <span className="font-display text-3xl text-cream tabular-nums">{h.time}</span>
-              </li>
-            ))}
-          </ul>
-
-          <p className="mt-6 flex items-center gap-3 font-mono text-xs tracking-widest text-cream-dim uppercase" aria-live="polite">
-            {isOpen === null ? (
-              <span>&nbsp;</span>
-            ) : (
-              <>
-                <span className={`size-2 rounded-full ${isOpen ? "animate-pulse bg-success" : "bg-danger"}`} />
-                {isOpen ? "Одоо нээлттэй" : "Одоо хаалттай"} · УБ{" "}
-                {String(now!.h).padStart(2, "0")}:{String(now!.m).padStart(2, "0")}
-              </>
-            )}
-          </p>
-        </div>
+      <div className="relative mx-auto flex min-h-[100svh] max-w-[1600px] flex-col px-4 py-6 sm:px-5">
+        {/* top-left label */}
+        <p className="flex items-center gap-2 font-mono text-[13px] tracking-[0.02em] uppercase">
+          <span className="size-[5px] rounded-full bg-gold" />
+          Цагийн хуваарь
+        </p>
 
         {/* Clock */}
-        <div className="order-1 lg:order-2 lg:col-span-6 lg:col-start-7">
-          <div className="relative mx-auto aspect-square w-full max-w-[560px] [container-type:inline-size]">
-            <div className="brew-glow absolute inset-0 rounded-full border border-white/10" />
-            {/* ticks */}
-            {Array.from({ length: 60 }, (_, i) => (
-              <span
-                key={i}
-                className="absolute top-1/2 left-1/2 origin-[0_0]"
-                style={{ transform: `rotate(${i * 6}deg) translate(-50%, -46cqw)` }}
-              >
-                <span className={`block w-px ${i % 5 === 0 ? "h-4 bg-cream/70" : "h-2 bg-cream/25"}`} />
-              </span>
-            ))}
-            {/* numerals */}
-            {[12, 3, 6, 9].map((n, i) => (
-              <span
-                key={n}
-                className="absolute font-display text-2xl text-cream/80 sm:text-3xl"
-                style={{
-                  left: `${50 + Math.sin((i * Math.PI) / 2) * 36}%`,
-                  top: `${50 - Math.cos((i * Math.PI) / 2) * 36}%`,
-                  transform: "translate(-50%, -50%)",
-                }}
-              >
-                {n}
-              </span>
-            ))}
-            {/* live hands */}
-            {now && (
-              <>
-                <span className="absolute top-1/2 left-1/2 h-[24%] w-1 origin-bottom -translate-x-1/2 -translate-y-full rounded-full bg-cream/40" style={{ rotate: `${hourAngle}deg` }} />
-                <span className="absolute top-1/2 left-1/2 h-[34%] w-0.5 origin-bottom -translate-x-1/2 -translate-y-full rounded-full bg-gold/70" style={{ rotate: `${minuteAngle}deg` }} />
-              </>
-            )}
-            {/* the latte, turning with scroll */}
-            <motion.div style={{ rotate }} className="absolute inset-0 flex items-center justify-center">
-              <IcedLatte className="h-[62%] -translate-y-[6%] drop-shadow-[0_30px_40px_rgba(0,0,0,0.6)]" />
+        <div className="flex flex-1 items-center justify-center py-10 lg:py-4">
+          <div className="relative aspect-square w-[min(92vw,80svh)] lg:w-[min(48vw,82svh)]">
+            <ClockFace />
+            <motion.div style={{ rotate: straw }} className="absolute inset-0">
+              <Straw />
             </motion.div>
-            <span className="absolute top-1/2 left-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold" />
+            <motion.div style={{ y: cupY }} className="absolute inset-0 flex items-center justify-center">
+              <motion.div
+                animate={{ y: ["-1%", "1%", "-1%"] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                className="relative h-[50%] translate-y-[2%]"
+              >
+                <Image
+                  src="/images/cutouts/iced-latte.webp"
+                  alt="44 iced latte"
+                  width={452}
+                  height={833}
+                  sizes="(min-width: 1024px) 24vw, 46vw"
+                  className="h-full w-auto drop-shadow-[0_22px_18px_rgba(60,35,15,0.22)]"
+                />
+                {/* print on the glass */}
+                <div className="pointer-events-none absolute inset-x-0 top-[44%] text-center mix-blend-multiply">
+                  <p className="font-deco text-[clamp(1.1rem,2.2vw,2.1rem)] leading-none font-semibold tracking-[-0.06em] text-[#1d140d]">
+                    44
+                  </p>
+                  <p className="mt-[0.5em] text-[clamp(0.4rem,0.62vw,0.62rem)] font-bold tracking-[0.18em] text-[#1d140d] uppercase">
+                    Iced latte
+                  </p>
+                  <p className="mt-[0.4em] text-[clamp(0.35rem,0.5vw,0.5rem)] leading-tight text-[#1d140d]/80">
+                    Зөөлөн. Хүчтэй.
+                    <br />
+                    Үргэлж зөв сонголт.
+                  </p>
+                </div>
+              </motion.div>
+            </motion.div>
           </div>
+        </div>
+
+        {/* bottom-left: address + hours, typed */}
+        <div className="grid gap-6 pb-4 font-mono text-[13px] leading-[1.45] tracking-[0.02em] uppercase sm:grid-cols-[auto_auto_1fr] sm:gap-14 lg:absolute lg:bottom-[13%] lg:left-5 lg:block lg:space-y-6 lg:pb-0">
+          <Typewriter lines={["Meru Tower, 2-р давхар", "44 Concept Café"]} />
+          <Typewriter lines={["Даваа – Баасан  08:00–22:00", "Бямба – Ням     10:00–22:00"]} delay={900} className="whitespace-pre" />
+          <p className="flex items-center gap-2" aria-live="polite">
+            <span
+              className={`size-[5px] rounded-full ${isOpen === null ? "bg-[#151515]/30" : isOpen ? "animate-pulse bg-[#2f9e44]" : "bg-danger"}`}
+            />
+            {isOpen === null ? "УБ" : isOpen ? "Одоо нээлттэй" : "Одоо хаалттай"} · {clock}
+          </p>
         </div>
       </div>
     </section>

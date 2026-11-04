@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useMotionValue, useScroll, useSpring, useTransform } from "motion/react";
+import { motion, useMotionValue, useMotionValueEvent, useScroll, useTransform, type MotionValue } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { BagMockup, CupMockup } from "@/components/home/mockups";
+import { HERO_CLIPS, HeroVideo } from "@/components/home/hero-video";
 import { Eyebrow } from "@/components/ui/motion";
 import type { MenuItem } from "@/lib/menu-data";
-import { useMediaQuery } from "@/lib/use-media-query";
 import { formatPrice } from "@/lib/site";
 
 const INTRO = 1.9; // seconds – waits for the preloader curtain
@@ -45,65 +44,77 @@ function TypedWord() {
   );
 }
 
-/** Lets the visitor grab a product, toss it around and spin it; it springs back home on release. */
-function Grabbable({ children }: { children: React.ReactNode }) {
-  const spin = useMotionValue(0);
-  const rotateY = useSpring(spin, { stiffness: 120, damping: 14 });
-  // Only for mouse/trackpad, so touch users can still scroll past the hero.
-  const canGrab = useMediaQuery("(hover: hover) and (pointer: fine)");
+/** One segment per clip: fills as that clip plays, click to jump to it. */
+function ClipBar({ index, active, progress, label, onSelect }: {
+  index: number;
+  active: boolean;
+  progress: MotionValue<number>;
+  label: string;
+  onSelect: () => void;
+}) {
+  const scaleX = useTransform(progress, (p) => (active ? p : 0));
   return (
-    <motion.div
-      drag={canGrab}
-      dragSnapToOrigin
-      dragElastic={0.35}
-      dragTransition={{ bounceStiffness: 220, bounceDamping: 16 }}
-      onDrag={(_, info) => spin.set(info.offset.x * 0.6)}
-      onDragEnd={() => spin.set(0)}
-      whileDrag={{ scale: 1.06 }}
-      style={{ rotateY, transformPerspective: 900 }}
-      className={canGrab ? "cursor-grab active:cursor-grabbing" : undefined}
-      data-cursor="Барих"
+    <button
+      type="button"
+      onClick={onSelect}
+      className="group pointer-events-auto flex w-16 flex-col gap-2 text-left sm:w-24"
+      aria-label={`Видео ${index + 1}: ${label}`}
+      data-cursor="Үзэх"
     >
-      {children}
-    </motion.div>
+      <span className={`transition-colors ${active ? "text-cream" : "text-muted group-hover:text-cream-dim"}`}>
+        0{index + 1} <span className="hidden sm:inline">{label}</span>
+      </span>
+      <span className="relative h-px w-full bg-cream/20">
+        <motion.span style={{ scaleX }} className="absolute inset-0 origin-left bg-gold" />
+      </span>
+    </button>
   );
 }
 
 export function Hero({ featured }: { featured?: MenuItem }) {
   const ref = useRef<HTMLElement>(null);
 
-  // Pointer parallax for the product mockups
-  const mx = useMotionValue(0);
-  const my = useMotionValue(0);
-  const sx = useSpring(mx, { stiffness: 60, damping: 18 });
-  const sy = useSpring(my, { stiffness: 60, damping: 18 });
-  const cupX = useTransform(sx, (v) => v * -28);
-  const cupY = useTransform(sy, (v) => v * -20);
-  const bagX = useTransform(sx, (v) => v * 16);
-  const bagY = useTransform(sy, (v) => v * 12);
-  const cardX = useTransform(sx, (v) => v * 34);
+  // Background clips
+  const progress = useMotionValue(0);
+  const speed = useMotionValue(1);
+  const [clip, setClip] = useState(0);
+  const [request, setRequest] = useState<{ index: number } | null>(null);
+  const [speedLabel, setSpeedLabel] = useState("1.0×");
+  useMotionValueEvent(speed, "change", (v) => {
+    const label = `${v.toFixed(1)}×`;
+    setSpeedLabel((prev) => (prev === label ? prev : label));
+  });
 
-  // Scroll: content drifts and fades
+  // Scroll: video sinks slower than the page, copy drifts and fades
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const videoY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const videoScale = useTransform(scrollYProgress, [0, 1], [1.05, 1.18]);
   const textY = useTransform(scrollYProgress, [0, 1], ["0%", "35%"]);
-  const productsY = useTransform(scrollYProgress, [0, 1], ["0%", "-18%"]);
   const fade = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
 
   return (
-    <section
-      ref={ref}
-      className="brew-glow relative min-h-[100svh] overflow-hidden"
-      onPointerMove={(e) => {
-        if (e.pointerType !== "mouse") return;
-        mx.set(e.clientX / window.innerWidth - 0.5);
-        my.set(e.clientY / window.innerHeight - 0.5);
-      }}
-    >
-      <div className="relative mx-auto grid min-h-[100svh] max-w-[1400px] items-center gap-6 px-5 pt-28 pb-24 sm:px-8 lg:grid-cols-12 lg:px-10 lg:pt-24">
+    <section ref={ref} className="relative min-h-[100svh] overflow-hidden bg-ink">
+      {/* Video background */}
+      <motion.div
+        style={{ y: videoY, scale: videoScale }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: INTRO - 0.4, duration: 1.4 }}
+        className="absolute inset-0"
+      >
+        <HeroVideo progress={progress} speed={speed} onIndexChange={setClip} requestIndex={request} />
+      </motion.div>
+
+      {/* Legibility: darken the left (copy side) and blend the bottom into the next section */}
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-r from-ink/90 via-ink/45 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-linear-to-t from-ink to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-linear-to-b from-ink/70 to-transparent" />
+
+      <div className="relative mx-auto flex min-h-[100svh] max-w-[1400px] items-center px-5 pt-28 pb-32 sm:px-8 lg:px-10 lg:pt-24">
         {/* Copy */}
-        <motion.div style={{ y: textY, opacity: fade }} className="relative z-10 lg:col-span-6">
+        <motion.div style={{ y: textY, opacity: fade }} className="relative z-10 max-w-2xl">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: INTRO, duration: 0.8 }}>
-            <Eyebrow>Концепт кофе шоп · Улаанбаатар</Eyebrow>
+            <Eyebrow>44 Concept Café · Meru Tower 2 давхар</Eyebrow>
           </motion.div>
 
           <h1 className="mt-6 font-display text-[17vw] text-cream sm:text-[12vw] lg:text-[7.4rem]">
@@ -150,71 +161,50 @@ export function Hero({ featured }: { featured?: MenuItem }) {
           </motion.div>
         </motion.div>
 
-        {/* Products */}
-        <motion.div style={{ y: productsY }} className="relative h-[52svh] min-h-[340px] lg:col-span-6 lg:h-[78vh]">
-          <motion.div
-            style={{ x: bagX, y: bagY }}
-            initial={{ opacity: 0, y: 80, rotate: 10 }}
-            animate={{ opacity: 1, y: 0, rotate: 4 }}
-            transition={{ delay: INTRO + 0.15, duration: 1.4, ease }}
-            className="absolute top-[4%] right-[-6%] w-[62%] sm:right-0 lg:right-[-4%] lg:w-[64%]"
-          >
-            <Grabbable>
-              <motion.div animate={{ y: [0, -10, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}>
-                <BagMockup className="w-full drop-shadow-[0_40px_60px_rgba(0,0,0,0.55)]" />
-              </motion.div>
-            </Grabbable>
-          </motion.div>
-
-          <motion.div
-            style={{ x: cupX, y: cupY }}
-            initial={{ opacity: 0, y: 120, rotate: -18 }}
-            animate={{ opacity: 1, y: 0, rotate: -9 }}
-            transition={{ delay: INTRO + 0.3, duration: 1.4, ease }}
-            className="absolute bottom-[2%] left-[2%] w-[44%] sm:left-[10%] lg:left-[0%] lg:w-[42%]"
-          >
-            <Grabbable>
-              <motion.div animate={{ y: [0, -14, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}>
-                <CupMockup className="w-full drop-shadow-[0_40px_60px_rgba(0,0,0,0.6)]" />
-              </motion.div>
-            </Grabbable>
-          </motion.div>
-
-          {featured && (
-            <motion.div
-              style={{ x: cardX }}
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: INTRO + 0.8, duration: 1, ease }}
-              className="absolute top-[4%] left-0 z-10 hidden w-[18rem] border border-white/10 bg-black/45 p-4 backdrop-blur-md sm:block lg:top-[10%] lg:left-[2%]"
-            >
-              <p className="font-mono text-[0.65rem] tracking-widest text-cream-dim uppercase">{"// Өнөөдрийн онцлох"}</p>
-              <div className="mt-2 flex items-baseline justify-between gap-3">
-                <p className="font-display text-2xl leading-none text-cream">{featured.name}</p>
-                <p className="font-mono text-sm text-cream tabular-nums">{formatPrice(featured.price)}</p>
-              </div>
-              <p className="mt-3 border-t border-white/10 pt-2 font-mono text-[0.62rem] tracking-wider text-cream-dim uppercase">
-                {featured.description}
-              </p>
-            </motion.div>
-          )}
-        </motion.div>
       </div>
 
-      {/* Bottom rule marks */}
+      {featured && (
+        <motion.div
+          style={{ opacity: fade }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: INTRO + 0.8, duration: 1, ease }}
+          className="absolute right-5 bottom-24 z-10 hidden w-[17rem] border border-white/10 bg-black/45 p-4 backdrop-blur-md sm:right-8 md:block lg:right-10"
+        >
+          <p className="font-mono text-[0.65rem] tracking-widest text-cream-dim uppercase">{"// Өнөөдрийн онцлох"}</p>
+          <div className="mt-2 flex items-baseline justify-between gap-3">
+            <p className="font-display text-2xl leading-none text-cream">{featured.name}</p>
+            <p className="font-mono text-sm text-cream tabular-nums">{formatPrice(featured.price)}</p>
+          </div>
+          <p className="mt-3 border-t border-white/10 pt-2 font-mono text-[0.62rem] tracking-wider text-cream-dim uppercase">
+            {featured.description}
+          </p>
+        </motion.div>
+      )}
+
+      {/* Bottom bar: clip progress · scroll hint · playback speed */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: INTRO + 1 }}
-        className="pointer-events-none absolute inset-x-0 bottom-6 mx-auto flex max-w-[1400px] items-end justify-between px-5 font-mono text-[0.62rem] tracking-[0.2em] text-muted uppercase sm:px-8 lg:px-10"
-        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-6 z-10 mx-auto flex max-w-[1400px] items-end justify-between gap-6 px-5 font-mono text-[0.62rem] tracking-[0.2em] text-muted uppercase sm:px-8 lg:px-10"
       >
-        <span className="flex items-end gap-16">
-          <span className="h-8 w-px bg-cream/30" />
-          <span className="h-8 w-px bg-cream/30" />
+        <div className="flex items-end gap-3 sm:gap-5">
+          {HERO_CLIPS.map((c, i) => (
+            <ClipBar
+              key={c.src}
+              index={i}
+              label={c.label}
+              active={clip === i}
+              progress={progress}
+              onSelect={() => setRequest({ index: i })}
+            />
+          ))}
+        </div>
+        <span className="hidden sm:inline" aria-hidden>Scroll ↓ · хурдлуулна</span>
+        <span className="tabular-nums" aria-hidden>
+          <span className={speedLabel === "1.0×" ? "text-muted" : "text-gold"}>{speedLabel}</span> · N°44
         </span>
-        <span>Scroll ↓</span>
-        <span>N°44 — Est. Ulaanbaatar</span>
       </motion.div>
     </section>
   );

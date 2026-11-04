@@ -1,4 +1,4 @@
-const words = ["Espresso", "Gelato", "Art Deco", "Art Wear", "Cold Brew", "Matcha", "Since 2024", "Ulaanbaatar"];
+const words = ["Espresso", "Gelato", "Art Deco", "Art Wear", "Cold Brew", "Matcha", "44 Concept Café", "Meru Tower · 2 Floor"];
 
 function Row({ reverse = false }: { reverse?: boolean }) {
   const items = [...words, ...words];

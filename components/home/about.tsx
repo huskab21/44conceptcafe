@@ -74,15 +74,15 @@ export function About() {
         <div className="lg:col-span-5">
           <Eyebrow>Бидний тухай · About</Eyebrow>
           <Reveal>
-            <h2 className="mt-6 font-display text-6xl text-cream sm:text-7xl xl:text-8xl">
-              Жингүй
+            <h2 className="mt-6 font-display text-6xl text-cream sm:text-7xl xl:text-[6.5rem]">
+              44 бол зүгээр
               <br />
-              <em>хөнгөн</em> өглөө
+              нэг <em>кафе</em> биш.
             </h2>
           </Reveal>
           <Reveal delay={0.1}>
             <p className="mt-8 max-w-md text-sm leading-relaxed font-bold tracking-tight text-cream uppercase">
-              44 бол зүгээр нэг кафе биш. Шинэхэн шарсан үр, гараар хийсэн желато, урлагийн хувцас нэг дор уулзсан
+              Шинэхэн шарсан үр, гараар хийсэн желато, урлагийн хувцас нэг дор уулзсан
               орон зай.
             </p>
             <p className="mt-5 max-w-md text-cream-dim">

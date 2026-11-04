@@ -116,7 +116,11 @@ export function Preloader() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
           >
-            44 <span className="font-script text-2xl font-medium tracking-normal text-gold-soft">concept</span>
+            44{" "}
+            <span className="inline-flex flex-col text-left align-middle font-script text-2xl leading-[0.85] font-medium tracking-normal text-gold-soft">
+              <span>concept</span>
+              <span>café</span>
+            </span>
           </motion.p>
           <motion.p
             className="mt-3 font-mono text-[0.65rem] tracking-[0.3em] text-cream-dim uppercase"

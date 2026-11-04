@@ -5,11 +5,11 @@ export const site = {
   tagline: "Кофе · Желато · Art Deco",
   instagram: "https://www.instagram.com/44.hype/",
   instagramHandle: "@44.hype",
-  address: "Жамъянгүний гудамж 18/1, СБД 1-р хороо, Улаанбаатар",
+  address: "Meru Tower, 2-р давхар, Улаанбаатар",
   mapsUrl: "https://maps.app.goo.gl/pk18Yr8ha83U7hoU6",
   mapsEmbed:
-    "https://www.google.com/maps?q=44+Concept+Cafe,+Jamyan+gun+street+18/1,+Ulaanbaatar&output=embed",
-  phone: "+976 9944 4444", // TODO: replace with the real number
+    "https://www.google.com/maps?q=Meru+Tower,+Ulaanbaatar&output=embed",
+  phone: "8088 2844",
   hours: [
     { days: "Даваа – Баасан", time: "08:00 – 22:00" },
     { days: "Бямба – Ням", time: "10:00 – 22:00" },

@@ -75,9 +75,12 @@ export function Navbar() {
           </nav>
           <span className="lg:hidden" />
 
-          <Link href="/" className="justify-self-center" aria-label={`${site.name} — нүүр`}>
+          <Link href="/" className="flex items-center gap-1.5 justify-self-center" aria-label={`${site.name} — нүүр`}>
             <span className="font-deco text-2xl font-semibold tracking-[-0.06em] text-cream">44</span>
-            <span className="ml-1.5 font-script text-xl text-gold-soft">concept</span>
+            <span className="flex flex-col font-script text-lg leading-[0.85] text-gold-soft">
+              <span>concept</span>
+              <span>café</span>
+            </span>
           </Link>
 
           <div className="flex items-center justify-end gap-6">

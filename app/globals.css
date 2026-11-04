@@ -209,3 +209,20 @@ body {
   -webkit-mask:
     conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / var(--tooth) 100%;
 }
+
+/* Beer hero: registered so the radial gradient can transition between flavours. */
+@property --beer-inner { syntax: "<color>"; inherits: true; initial-value: #c27d0e; }
+@property --beer-mid { syntax: "<color>"; inherits: true; initial-value: #5e3604; }
+@property --beer-outer { syntax: "<color>"; inherits: true; initial-value: #140b01; }
+
+@keyframes beer-bubble {
+  0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+  10% { opacity: var(--o, 0.4); }
+  90% { opacity: var(--o, 0.4); }
+  100% { transform: translateY(-110svh) translateX(30px) rotate(360deg); opacity: 0; }
+}
+@keyframes beer-fade { to { opacity: 1; } }
+@keyframes beer-float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -20px; }
+}
