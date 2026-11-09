@@ -100,24 +100,26 @@ export function Hero({ featured }: { featured?: MenuItem }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: INTRO - 0.4, duration: 1.4 }}
-        className="absolute inset-0"
+        className="absolute inset-x-0 top-0 h-[60svh] md:inset-0 md:h-auto"
       >
         <HeroVideo progress={progress} speed={speed} onIndexChange={setClip} requestIndex={request} />
+        {/* Phone: the clip fills the top of the screen and melts into the background under the copy */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-b from-transparent to-ink md:hidden" />
       </motion.div>
 
       {/* Legibility: darken the left (copy side) and blend the bottom into the next section */}
-      <div className="pointer-events-none absolute inset-0 bg-linear-to-r from-ink/90 via-ink/45 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 hidden bg-linear-to-r from-ink/90 via-ink/45 to-transparent md:block" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-linear-to-t from-ink to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-linear-to-b from-ink/70 to-transparent" />
 
-      <div className="relative mx-auto flex min-h-[100svh] max-w-[1400px] items-center px-5 pt-28 pb-32 sm:px-8 lg:px-10 lg:pt-24">
+      <div className="relative mx-auto flex min-h-[100svh] max-w-[1400px] items-end px-5 pt-28 pb-28 md:items-center md:pb-32 sm:px-8 lg:px-10 lg:pt-24">
         {/* Copy */}
         <motion.div style={{ y: textY, opacity: fade }} className="relative z-10 max-w-2xl">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: INTRO, duration: 0.8 }}>
             <Eyebrow>44 Concept Café · Meru Tower 2 давхар</Eyebrow>
           </motion.div>
 
-          <h1 className="mt-6 font-display text-[17vw] text-cream sm:text-[12vw] lg:text-[7.4rem]">
+          <h1 className="mt-4 font-display text-[15vw] md:mt-6 text-cream sm:text-[12vw] lg:text-[7.4rem]">
             {["Кофе", "таны"].map((w, i) => (
               <span key={w} className="block overflow-hidden pb-[0.04em]">
                 <motion.span
@@ -139,7 +141,7 @@ export function Hero({ featured }: { featured?: MenuItem }) {
             initial={{ opacity: 0, x: -16 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: INTRO + 0.35, duration: 0.9, ease }}
-            className="mt-8 flex items-center gap-4 font-mono text-[0.72rem] font-bold tracking-[0.45em] text-gold uppercase sm:text-xs"
+            className="mt-6 flex items-center gap-4 font-mono md:mt-8 text-[0.72rem] font-bold tracking-[0.45em] text-gold uppercase sm:text-xs"
           >
             <span className="h-px w-10 bg-gold/60 sm:w-16" aria-hidden />
             Selling the vibe
@@ -158,7 +160,7 @@ export function Hero({ featured }: { featured?: MenuItem }) {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: INTRO + 0.6, duration: 0.9, ease }}
-            className="mt-10 flex items-center gap-8"
+            className="mt-8 flex items-center gap-8 md:mt-10"
           >
             <Link href="/#menu" className="group relative inline-flex items-center gap-2 text-sm font-bold tracking-wide text-cream uppercase">
               Меню үзэх

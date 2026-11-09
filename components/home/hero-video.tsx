@@ -126,7 +126,7 @@ export function HeroVideo({ progress, speed, onIndexChange, requestIndex }: Prop
           autoPlay={i === 0}
           preload="auto"
           onEnded={() => goTo((i + 1) % HERO_CLIPS.length)}
-          className="absolute inset-0 h-full w-full object-cover transition-opacity duration-[1200ms] ease-out"
+          className="absolute inset-0 h-full w-full object-cover object-[72%_50%] transition-opacity md:object-center duration-[1200ms] ease-out"
           style={{ opacity: i === active ? 1 : 0 }}
         />
       ))}
