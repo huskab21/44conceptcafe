@@ -1,4 +1,4 @@
-const words = ["Espresso", "Gelato", "Art Deco", "Art Wear", "Cold Brew", "Matcha", "44 Concept Café", "Meru Tower · 2 Floor"];
+const words = ["Espresso", "Gelato", "44 Hype", "Selling the vibe", "Art Wear", "Designer Toys", "Cold Brew", "Street Art", "44 Concept Café", "Meru Tower · 2 Floor"];
 
 function Row({ reverse = false }: { reverse?: boolean }) {
   const items = [...words, ...words];
@@ -21,7 +21,7 @@ export function Marquee() {
       <div className="-rotate-3 bg-gold py-4 text-ink sm:py-5">
         <Row />
       </div>
-      <div className="mt-[-1.75rem] rotate-2 border-y border-line bg-ink-2 py-4 text-cream-dim sm:mt-[-2.5rem] sm:py-5">
+      <div className="camo mt-[-1.75rem] rotate-2 border-y-4 border-ink py-4 text-cream [text-shadow:2px_2px_0_#120c08] sm:mt-[-2.5rem] sm:py-5">
         <Row reverse />
       </div>
     </section>

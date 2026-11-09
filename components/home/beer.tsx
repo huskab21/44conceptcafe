@@ -16,8 +16,10 @@ import type { BottleId, BottleScene } from "@/components/home/bottle-3d";
 const BEERS: Record<BottleId, { name: string; spec: string; img: string; w: number; h: number; inner: string; mid: string }> = {
   sapporo: { name: "Sapporo Premium", spec: "330ml · 5.0%", img: "/images/beer/sapporo.webp", w: 227, h: 879, inner: "#7a4b19", mid: "#2e1b0c" },
   kirin: { name: "Kirin Ichiban", spec: "650ml · 5.0%", img: "/images/beer/kirin.webp", w: 142, h: 540, inner: "#73301a", mid: "#2d130b" },
+  corona: { name: "Corona Extra", spec: "330ml · 4.5%", img: "/images/beer/corona.webp", w: 120, h: 472, inner: "#86621b", mid: "#31220b" },
+  heineken: { name: "Heineken", spec: "330ml · 5.0%", img: "/images/beer/heineken.webp", w: 231, h: 900, inner: "#3b5622", mid: "#15200d" },
 };
-const ORDER: BottleId[] = ["sapporo", "kirin"];
+const ORDER: BottleId[] = ["sapporo", "kirin", "corona", "heineken"];
 const INK = "#120c08";
 
 /* Just a little wheat: [top %, left %, size px, opacity, layer]. */
@@ -50,6 +52,32 @@ function Wheat() {
       ))}
       <ellipse cx="50" cy="12" rx="4" ry="6.5" fill="url(#wheat-g)" />
     </svg>
+  );
+}
+
+/** "Buy 2, get 1" sticker: a gold stamp with a slowly turning ring of text. */
+function PromoStamp() {
+  const ring = "2 АВБАЛ 1 БЭЛЭГ · BUY 2 GET 1 FREE · ";
+  return (
+    <div className="group absolute top-24 right-4 z-[115] size-[118px] sm:size-[150px] lg:top-auto lg:right-auto lg:bottom-[13%] lg:left-[calc(50%+90px)]">
+      <div className="absolute inset-0 animate-[spin_18s_linear_infinite] group-hover:[animation-duration:5s]">
+        <svg viewBox="0 0 200 200" className="h-full w-full" aria-hidden>
+          <defs>
+            <path id="promo-ring" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0" />
+          </defs>
+          <circle cx="100" cy="100" r="98" fill="#d9a46c" />
+          <circle cx="100" cy="100" r="62" fill="none" stroke="#120c08" strokeOpacity="0.35" strokeDasharray="2 5" />
+          <text fill="#120c08" fontSize="15.5" fontWeight="500" letterSpacing="2.6" style={{ fontFamily: "var(--font-jetbrains), monospace" }}>
+            <textPath href="#promo-ring">{ring}</textPath>
+          </text>
+        </svg>
+      </div>
+      <div className="absolute inset-[22%] flex -rotate-12 flex-col items-center justify-center rounded-full bg-ink text-center shadow-[inset_0_0_0_2px_rgba(217,164,108,0.5)] transition-transform duration-500 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-110 group-hover:rotate-0">
+        <span className="font-display text-[1.9rem] leading-none text-gold sm:text-[2.4rem]">2+1</span>
+        <span className="mt-1 font-mono text-[0.5rem] tracking-[0.18em] text-cream uppercase sm:text-[0.56rem]">Бүх пиво</span>
+      </div>
+      <span className="sr-only">Урамшуулал: 2 пиво авбал 1 пиво бэлэг.</span>
+    </div>
   );
 }
 
@@ -272,12 +300,12 @@ export function BeerShowcase() {
           <div className="relative z-[100] flex h-full flex-col gap-8 py-24">
             <p className="font-mono text-[0.68rem] tracking-[0.25em] text-gold uppercase">{"// Пиво · Beer"}</p>
             <h2 className="font-display text-[clamp(4rem,8vw,8.5rem)] text-cream">
-              Япон
+              Импорт
               <br />
               <em>лагер</em>
             </h2>
             <p className="max-w-[24rem] text-sm leading-relaxed font-bold tracking-tight text-cream uppercase">
-              Кофены дараах орой бүрт — <span className="text-cream-dim">хүйтэн, тунгалаг, шинэхэн Япон пиво 44-т.</span>
+              Кофены дараах орой бүрт — <span className="text-cream-dim">хүйтэн, тунгалаг, шинэхэн импорт пиво 44-т.</span>
             </p>
             <Link
               href="/reserve"
@@ -294,7 +322,7 @@ export function BeerShowcase() {
                 </svg>
               </div>
               <div className="flex flex-col font-mono uppercase">
-                <span className="text-[0.62rem] tracking-[0.2em] text-cream-dim">Imported from Japan</span>
+                <span className="text-[0.62rem] tracking-[0.2em] text-cream-dim">Japan · Mexico · Holland</span>
                 <span className="text-[0.75rem] tracking-[0.1em] text-cream">Premium lager · N°44</span>
               </div>
             </div>
@@ -320,9 +348,9 @@ export function BeerShowcase() {
           </div>
 
           {/* right */}
-          <div className="pointer-events-none relative z-[100] hidden h-full w-[420px] flex-col items-end justify-between py-24 text-right lg:flex">
+          <div className="pointer-events-none relative z-[100] hidden h-full w-[460px] flex-col items-end justify-between py-24 text-right lg:flex">
             <div className="pointer-events-auto flex flex-col items-end gap-6">
-              <div className="flex gap-4">
+              <div className="flex gap-3">
                 {ORDER.map((id) => {
                   const b = BEERS[id];
                   const active = beer === id;
@@ -332,7 +360,7 @@ export function BeerShowcase() {
                       type="button"
                       onClick={() => choose(id)}
                       aria-pressed={active}
-                      className={`group relative flex w-[135px] flex-col items-center gap-6 rounded-[28px] border p-4 pt-20 text-center backdrop-blur-[10px] transition-all duration-[400ms] [transition-timing-function:cubic-bezier(0.175,0.885,0.32,1.275)] hover:border-white/40 hover:bg-white/[0.08] ${
+                      className={`group relative flex w-[104px] flex-col items-center gap-5 rounded-[24px] border p-3 pt-16 text-center backdrop-blur-[10px] transition-all duration-[400ms] [transition-timing-function:cubic-bezier(0.175,0.885,0.32,1.275)] hover:border-white/40 hover:bg-white/[0.08] ${
                         active ? "border-gold bg-white/[0.04]" : "border-white/10 bg-white/[0.03]"
                       }`}
                     >
@@ -342,10 +370,13 @@ export function BeerShowcase() {
                         width={b.w}
                         height={b.h}
                         sizes="60px"
-                        className="pointer-events-none -mt-32 h-[150px] w-auto drop-shadow-[0_20px_35px_rgba(0,0,0,0.5)] transition-transform duration-500 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] group-hover:-translate-y-[30px] group-hover:scale-[1.15] group-hover:-rotate-12"
+                        className="pointer-events-none -mt-28 h-[128px] w-auto drop-shadow-[0_20px_35px_rgba(0,0,0,0.5)] transition-transform duration-500 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] group-hover:-translate-y-[30px] group-hover:scale-[1.15] group-hover:-rotate-12"
                         style={{ filter: active ? undefined : "brightness(0.7)" }}
                       />
-                      <span className="flex w-full flex-col font-mono text-[0.62rem] tracking-wide uppercase">
+                      <span className="absolute -top-2.5 -right-2.5 grid size-8 rotate-12 place-items-center rounded-full bg-gold font-mono text-[0.6rem] font-bold text-ink shadow-[0_6px_14px_rgba(0,0,0,0.4)] transition-transform duration-500 group-hover:rotate-[372deg]">
+                        2+1
+                      </span>
+                      <span className="flex w-full flex-col font-mono text-[0.58rem] tracking-wide uppercase">
                         <span className="text-cream">{b.name}</span>
                         <span className="text-cream-dim">{b.spec}</span>
                       </span>
@@ -376,8 +407,10 @@ export function BeerShowcase() {
         </div>
       </div>
 
+      <PromoStamp />
+
       {/* mobile switcher */}
-      <div className="absolute inset-x-0 bottom-8 z-[120] flex justify-center gap-3 lg:hidden">
+      <div className="absolute inset-x-0 bottom-8 z-[120] flex flex-wrap justify-center gap-2 px-4 lg:hidden">
         {ORDER.map((id) => (
           <button
             key={id}

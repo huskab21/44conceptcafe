@@ -15,6 +15,8 @@ export type AppUser = {
   email: string;
   fullName: string;
   phone: string;
+  /** app_metadata.role === "admin" — set only from the Supabase dashboard / SQL. */
+  isAdmin: boolean;
 };
 
 export type ReservationStatus = "pending" | "confirmed" | "cancelled";
@@ -30,9 +32,14 @@ export type Reservation = {
   note: string | null;
   status: ReservationStatus;
   created_at: string;
+  /** ₮ deposit, deducted from the final bill. */
+  deposit: number;
+  deposit_paid: boolean;
+  /** Guest confirmed they are 21+ (checked again at the door). */
+  age_confirmed: boolean;
 };
 
-export type NewReservation = Pick<Reservation, "full_name" | "phone" | "date" | "time" | "guests" | "note">;
+export type NewReservation = Pick<Reservation, "full_name" | "phone" | "date" | "time" | "guests" | "note" | "age_confirmed">;
 
 export const demoMode = !isSupabaseConfigured;
 
@@ -73,7 +80,7 @@ function emit(u: AppUser | null) {
   listeners.forEach((l) => l(u));
 }
 function strip(u: DemoUser): AppUser {
-  return { id: u.id, email: u.email, fullName: u.fullName, phone: u.phone };
+  return { id: u.id, email: u.email, fullName: u.fullName, phone: u.phone, isAdmin: false };
 }
 
 /* ───────────── auth ───────────── */
@@ -104,7 +111,7 @@ export async function signUp(input: {
   if (users.some((u) => u.email.toLowerCase() === input.email.toLowerCase())) {
     return { ok: false, error: translate["User already registered"] };
   }
-  const user: DemoUser = { id: crypto.randomUUID(), ...input };
+  const user: DemoUser = { id: crypto.randomUUID(), ...input, isAdmin: false };
   write(K.users, [...users, user]);
   write(K.session, user.id);
   emit(strip(user));
@@ -149,6 +156,7 @@ export async function getCurrentUser(): Promise<AppUser | null> {
       email: u.email ?? "",
       fullName: (u.user_metadata?.full_name as string) ?? "",
       phone: (u.user_metadata?.phone as string) ?? "",
+      isAdmin: u.app_metadata?.role === "admin",
     };
   }
   const id = read<string | null>(K.session, null);
@@ -168,6 +176,7 @@ export function onAuthChange(cb: (u: AppUser | null) => void): () => void {
               email: u.email ?? "",
               fullName: (u.user_metadata?.full_name as string) ?? "",
               phone: (u.user_metadata?.phone as string) ?? "",
+              isAdmin: u.app_metadata?.role === "admin",
             }
           : null,
       );
@@ -191,7 +200,11 @@ export async function createReservation(userId: string, input: NewReservation): 
     if (error) {
       const msg = error.message.includes("reservation_slot_full")
         ? "Энэ цагт ширээ дүүрсэн байна. Өөр цаг сонгоно уу."
-        : error.message;
+        : error.message.includes("reservation_invalid_time")
+          ? "Ширээ зөвхөн 18:00-оос хойш захиалагдана."
+          : error.message.includes("reservation_age")
+            ? "Ширээ захиалга зөвхөн 21 нас хүрсэн хүнд."
+            : error.message;
       return { ok: false, error: msg };
     }
     return { ok: true, data: data as Reservation };
@@ -203,6 +216,8 @@ export async function createReservation(userId: string, input: NewReservation): 
     user_id: userId,
     status: "pending",
     created_at: new Date().toISOString(),
+    deposit: 50_000,
+    deposit_paid: false,
     ...input,
   };
   write(K.res, [r, ...all]);
@@ -238,4 +253,14 @@ export async function cancelReservation(id: string): Promise<Result> {
   );
   write(K.res, all);
   return { ok: true, data: undefined };
+}
+
+/** `Authorization` header with the signed-in user's Supabase token (empty when signed out / demo mode). */
+export async function authHeader(): Promise<Record<string, string>> {
+  const h: Record<string, string> = {};
+  const sb = getBrowserSupabase();
+  if (!sb) return h;
+  const { data } = await sb.auth.getSession();
+  if (data.session) h.Authorization = `Bearer ${data.session.access_token}`;
+  return h;
 }

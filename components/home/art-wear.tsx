@@ -5,7 +5,7 @@ import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from
 import { useRef, useState } from "react";
 import { Eyebrow } from "@/components/ui/motion";
 import { ScrambleText } from "@/components/ui/scramble-text";
-import { features, wear, type WearItem } from "@/lib/wear";
+import { features, type WearItem } from "@/lib/wear";
 import { formatPrice } from "@/lib/site";
 
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -28,45 +28,6 @@ function FeatureIcon({ kind }: { kind: (typeof features)[number]["icon"] }) {
       )}
       {kind === "hanger" && <path d="M12 7 C 12 4, 15.5 4.5, 14.5 6.5 C 14 7.5, 12 8, 12 9.5 L 3.5 16 C 3 16.4, 3.3 17, 3.9 17 H 20.1 C 20.7 17, 21 16.4, 20.5 16 L 12 9.5" {...p} />}
     </svg>
-  );
-}
-
-/** Size, fit and who it suits – shown in the hero and on each card. */
-function Fit({ item, compact = false }: { item: WearItem; compact?: boolean }) {
-  return (
-    <dl className={`grid font-mono uppercase ${compact ? "grid-cols-3 gap-2 text-[0.58rem]" : "grid-cols-3 gap-4 text-[0.68rem]"} tracking-[0.12em]`}>
-      <div>
-        <dt className="text-muted">Өндөр</dt>
-        <dd className="mt-1 text-cream tabular-nums">
-          {item.height[0]}–{item.height[1]}см
-        </dd>
-      </div>
-      <div>
-        <dt className="text-muted">Жин</dt>
-        <dd className="mt-1 text-cream tabular-nums">
-          {item.weight[0]}–{item.weight[1]}кг
-        </dd>
-      </div>
-      <div>
-        <dt className="text-muted">Хүйс</dt>
-        <dd className="mt-1 text-cream">{item.gender}</dd>
-      </div>
-    </dl>
-  );
-}
-
-function Sizes({ sizes, large = false }: { sizes: string[]; large?: boolean }) {
-  return (
-    <ul className="flex flex-wrap gap-1.5" aria-label="Размер">
-      {sizes.map((s) => (
-        <li
-          key={s}
-          className={`grid place-items-center border border-gold/50 font-mono text-gold-soft ${large ? "h-9 min-w-9 px-2 text-xs" : "h-6 min-w-6 px-1.5 text-[0.6rem]"}`}
-        >
-          {s}
-        </li>
-      ))}
-    </ul>
   );
 }
 
@@ -111,16 +72,13 @@ function ProductCard({ item, index, active, onSelect }: { item: WearItem; index:
         />
       </div>
 
-      <div className="mt-auto space-y-3 border-t border-white/10 pt-3">
-        <Sizes sizes={item.sizes} />
-        <Fit item={item} compact />
-      </div>
     </motion.button>
   );
 }
 
 /** Art Wear: the featured piece up top with its fit details, then the full one-of-one collection. */
-export function ArtWear() {
+/** `items` comes from Supabase `wear_items` (editable on /admin); render only when non-empty. */
+export function ArtWear({ items: wear }: { items: WearItem[] }) {
   const [selected, setSelected] = useState(wear[0]);
   const hero = useRef<HTMLDivElement>(null);
 
@@ -217,13 +175,6 @@ export function ArtWear() {
                     <ScrambleText text={selected.name} hover={false} duration={700} />
                   </h3>
                   <p className="mt-4 font-display text-3xl text-gold-soft tabular-nums">{formatPrice(selected.price)}</p>
-                  <div className="mt-6 space-y-5 border-t border-white/10 pt-5">
-                    <div>
-                      <p className="mb-2 font-mono text-[0.62rem] tracking-[0.2em] text-muted uppercase">Размер</p>
-                      <Sizes sizes={selected.sizes} large />
-                    </div>
-                    <Fit item={selected} />
-                  </div>
                 </motion.div>
               </AnimatePresence>
             </div>

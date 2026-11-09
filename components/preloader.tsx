@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useLenis } from "lenis/react";
 import { useEffect, useState } from "react";
+import { Logo } from "@/components/logo";
 
 const CUP = "M40 40 H160 L148 176 Q100 184 52 176 Z";
 const HANDLE = "M158 70 Q196 74 192 108 Q188 140 152 142";
@@ -116,11 +117,7 @@ export function Preloader() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
           >
-            44{" "}
-            <span className="inline-flex flex-col text-left align-middle font-script text-2xl leading-[0.85] font-medium tracking-normal text-gold-soft">
-              <span>concept</span>
-              <span>café</span>
-            </span>
+            <Logo size="1.9rem" />
           </motion.p>
           <motion.p
             className="mt-3 font-mono text-[0.65rem] tracking-[0.3em] text-cream-dim uppercase"

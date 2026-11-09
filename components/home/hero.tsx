@@ -136,10 +136,20 @@ export function Hero({ featured }: { featured?: MenuItem }) {
           </h1>
 
           <motion.p
+            initial={{ opacity: 0, x: -16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: INTRO + 0.35, duration: 0.9, ease }}
+            className="mt-8 flex items-center gap-4 font-mono text-[0.72rem] font-bold tracking-[0.45em] text-gold uppercase sm:text-xs"
+          >
+            <span className="h-px w-10 bg-gold/60 sm:w-16" aria-hidden />
+            Selling the vibe
+          </motion.p>
+
+          <motion.p
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: INTRO + 0.45, duration: 0.9, ease }}
-            className="mt-8 max-w-xs text-sm leading-snug font-bold tracking-tight text-cream uppercase sm:text-[0.95rem]"
+            className="mt-5 max-w-xs text-sm leading-snug font-bold tracking-tight text-cream uppercase sm:text-[0.95rem]"
           >
             Жижиг багцаар шарсан үр, гараар бэлдсэн аяга бүр. <span className="text-cream-dim">Art Deco орчинд.</span>
           </motion.p>

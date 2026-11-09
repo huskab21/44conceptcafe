@@ -1,9 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Caveat, Inter_Tight, JetBrains_Mono, Manrope, Unbounded } from "next/font/google";
-import { Cursor } from "@/components/cursor";
-import { Footer } from "@/components/footer";
-import { Navbar } from "@/components/navbar";
-import { Preloader } from "@/components/preloader";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { MotionProvider } from "@/components/providers/motion-provider";
 import { site } from "@/lib/site";
@@ -42,11 +38,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-svh">
         <MotionProvider>
           <AuthProvider>
-            <Preloader />
-            <Navbar />
             {children}
-            <Footer />
-            <Cursor />
           </AuthProvider>
         </MotionProvider>
         <div className="grain" aria-hidden />

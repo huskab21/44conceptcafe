@@ -8,6 +8,7 @@ import { useLenis } from "lenis/react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Magnetic } from "@/components/ui/motion";
 import { site } from "@/lib/site";
+import { Logo } from "@/components/logo";
 
 const links = [
   { href: "/#menu", label: "Меню" },
@@ -76,14 +77,15 @@ export function Navbar() {
           <span className="lg:hidden" />
 
           <Link href="/" className="flex items-center gap-1.5 justify-self-center" aria-label={`${site.name} — нүүр`}>
-            <span className="font-deco text-2xl font-semibold tracking-[-0.06em] text-cream">44</span>
-            <span className="flex flex-col font-script text-lg leading-[0.85] text-gold-soft">
-              <span>concept</span>
-              <span>café</span>
-            </span>
+            <Logo size="1.6rem" />
           </Link>
 
           <div className="flex items-center justify-end gap-6">
+            {!loading && user?.isAdmin && (
+              <Link href="/admin" className="hidden text-[0.8rem] font-medium tracking-wide text-gold uppercase hover:text-gold-soft sm:block">
+                Admin
+              </Link>
+            )}
             {!loading && (
               <Link
                 href={user ? "/account" : "/login"}
@@ -125,7 +127,11 @@ export function Navbar() {
           >
             <div className="brew-glow pointer-events-none absolute inset-0 -z-10" aria-hidden />
             <nav className="relative flex flex-col gap-1" aria-label="Гар утасны цэс">
-              {[...links, user ? { href: "/account", label: "Миний захиалга" } : { href: "/login", label: "Нэвтрэх" }].map(
+              {[
+                ...links,
+                ...(user?.isAdmin ? [{ href: "/admin", label: "Admin" }] : []),
+                user ? { href: "/account", label: "Миний захиалга" } : { href: "/login", label: "Нэвтрэх" },
+              ].map(
                 (l, i) => (
                   <motion.div
                     key={l.href}

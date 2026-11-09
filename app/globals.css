@@ -226,3 +226,28 @@ body {
   0%, 100% { translate: 0 0; }
   50% { translate: 0 -20px; }
 }
+
+/* ───────────── 44 HYPE: streetwear / designer-toy layer ───────────── */
+/* Coffee-tone camo (original pattern, public/images/decor/camo-coffee.svg). */
+.camo {
+  background-color: #3b2617;
+  background-image: url("/images/decor/camo-coffee.svg");
+  background-size: 320px 320px;
+}
+/* Die-cut sticker: thick cream outline + hard shadow. */
+.sticker {
+  border: 3px solid var(--cream);
+  box-shadow: 4px 5px 0 rgba(0, 0, 0, 0.45);
+}
+/* Vinyl-toy gloss highlight. */
+.toy-gloss {
+  background-image: radial-gradient(ellipse 40% 28% at 32% 22%, rgba(255, 255, 255, 0.45), transparent 70%);
+}
+@keyframes toy-bob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-10px) rotate(2deg); }
+}
+.animate-toy-bob { animation: toy-bob 4.5s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-toy-bob { animation: none; }
+}

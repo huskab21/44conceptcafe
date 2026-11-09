@@ -8,10 +8,11 @@ export function Footer() {
       <div className="mx-auto grid max-w-7xl gap-12 px-4 pt-20 pb-10 sm:px-6 md:grid-cols-12">
         <div className="md:col-span-5">
           <p className="font-display text-4xl leading-tight text-cream sm:text-5xl">
-            Нэг аяга кофе,
+            Selling
             <br />
-            <em className="text-gold">нэг урлагийн мөч.</em>
+            <em className="text-gold">the vibe.</em>
           </p>
+          <p className="mt-3 text-sm text-cream-dim">Нэг аяга кофе, нэг урлагийн мөч.</p>
           <a
             href={site.instagram}
             target="_blank"
@@ -52,9 +53,6 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="pointer-events-none select-none px-4 text-center font-deco text-[34vw] leading-[0.8] font-semibold text-outline sm:text-[26vw]" aria-hidden>
-        44
-      </div>
 
       <div className="border-t border-line">
         <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-xs text-muted sm:flex-row sm:justify-between sm:px-6">

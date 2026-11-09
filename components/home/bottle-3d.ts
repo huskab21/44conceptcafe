@@ -7,6 +7,8 @@ export type BottleId = keyof typeof bottleProfiles;
 const IMAGES: Record<BottleId, string> = {
   sapporo: "/images/beer/sapporo.webp",
   kirin: "/images/beer/kirin.webp",
+  corona: "/images/beer/corona.webp",
+  heineken: "/images/beer/heineken.webp",
 };
 
 /**
