@@ -77,44 +77,47 @@ export function Hero({ featured }: { featured?: MenuItem }) {
         {/* Copy */}
         <motion.div style={{ y: textY, opacity: fade }} className="relative z-10 max-w-2xl">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: INTRO, duration: 0.8 }}>
-            <Eyebrow>44 Concept Café · Meru Tower 2 давхар</Eyebrow>
+            <Eyebrow>
+              44 Concept Café<span className="hidden sm:inline"> · Meru Tower 2 давхар</span>
+            </Eyebrow>
           </motion.div>
 
           <h1 className="mt-5 font-display text-[19vw] leading-[0.86] text-cream uppercase sm:text-[13vw] md:mt-6 lg:text-[9.5rem]">
-            {["Selling", "the"].map((w, i) => (
-              <span key={w} className="block overflow-hidden pb-[0.04em]">
-                <motion.span
-                  className="block"
-                  initial={{ y: "105%" }}
-                  animate={{ y: "0%" }}
-                  transition={{ delay: INTRO + i * 0.12, duration: 1.1, ease }}
-                >
-                  {w}
+            <span className="block overflow-hidden pb-[0.04em]">
+              <motion.span className="block" initial={{ y: "105%" }} animate={{ y: "0%" }} transition={{ delay: INTRO, duration: 1.1, ease }}>
+                Selling
+              </motion.span>
+            </span>
+            {/* "THE" with the handwritten "vibe." tucked in right after it */}
+            <span className="flex items-end gap-[0.16em]">
+              <span className="block overflow-hidden pb-[0.04em]">
+                <motion.span className="block" initial={{ y: "105%" }} animate={{ y: "0%" }} transition={{ delay: INTRO + 0.12, duration: 1.1, ease }}>
+                  The
                 </motion.span>
               </span>
-            ))}
-            <motion.em
-              className="-mt-[0.02em] block text-[0.95em] leading-[1] normal-case sm:pl-[0.6em]"
-              initial={{ opacity: 0, x: -30, rotate: -4 }}
-              animate={{ opacity: 1, x: 0, rotate: -4 }}
-              transition={{ delay: INTRO + 0.3, duration: 1, ease }}
-            >
-              vibe.
-            </motion.em>
+              <motion.em
+                className="mb-[0.06em] block text-[0.82em] leading-[1] whitespace-nowrap normal-case"
+                initial={{ opacity: 0, x: -24, rotate: -6 }}
+                animate={{ opacity: 1, x: 0, rotate: -6 }}
+                transition={{ delay: INTRO + 0.35, duration: 1, ease }}
+              >
+                vibe.
+              </motion.em>
+            </span>
           </h1>
 
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: INTRO + 0.6, duration: 0.9, ease }}
-            className="mt-10 flex items-center gap-8 md:mt-12"
+            className="mt-10 flex items-center gap-6 whitespace-nowrap sm:gap-8 md:mt-12"
           >
-            <Link href="/#menu" className="group relative inline-flex items-center gap-2 text-sm font-bold tracking-wide text-cream uppercase">
+            <Link href="/#menu" className="group relative inline-flex items-center gap-2 text-[0.8rem] font-bold tracking-wide text-cream uppercase sm:text-sm">
               Меню үзэх
               <span className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">↗</span>
               <span className="absolute -bottom-1.5 left-0 h-px w-full origin-left bg-cream/60 transition-transform duration-500 group-hover:scale-x-0" />
             </Link>
-            <Link href="/reserve" className="text-sm font-bold tracking-wide text-gold uppercase transition-colors hover:text-gold-soft">
+            <Link href="/reserve" className="text-[0.8rem] font-bold tracking-wide text-gold uppercase transition-colors hover:text-gold-soft sm:text-sm">
               Ширээ захиалах →
             </Link>
           </motion.div>
