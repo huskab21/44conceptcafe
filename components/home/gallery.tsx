@@ -6,30 +6,20 @@ import { useRef } from "react";
 import { Eyebrow } from "@/components/ui/motion";
 import { site } from "@/lib/site";
 
-// Placeholder photography – swap with the café's own photos in /public/images.
-const columns = [
-  [
-    { src: "/images/bar.webp", alt: "Кофе бар" },
-    { src: "/images/cheers.webp", alt: "Найзууд кофе уух нь" },
-    { src: "/images/cake.webp", alt: "Шоколадан бялуу" },
-  ],
-  [
-    { src: "/images/terrace.webp", alt: "Ногоон ургамалтай дэнж" },
-    { src: "/images/iced-latte.webp", alt: "Айс латте" },
-    { src: "/images/beans.webp", alt: "Шарсан кофены үр" },
-  ],
-  [
-    { src: "/images/cafe-sign.webp", alt: "Кафены гэрэлт хаяг" },
-    { src: "/images/croissant.webp", alt: "Круассан" },
-    { src: "/images/interior-2.webp", alt: "Кафены танхим" },
-  ],
-];
+type Img = { src: string; alt: string };
 
-function Column({ images, y, className = "" }: { images: (typeof columns)[number]; y: MotionValue<string>; className?: string }) {
+/** Deal photos into `n` columns, left to right, so sort order reads across the top first. */
+function split(images: Img[], n: number): Img[][] {
+  const cols: Img[][] = Array.from({ length: n }, () => []);
+  images.forEach((img, i) => cols[i % n].push(img));
+  return cols;
+}
+
+function Column({ images, y, className = "" }: { images: Img[]; y: MotionValue<string>; className?: string }) {
   return (
     <motion.div style={{ y }} className={`flex flex-col gap-4 sm:gap-6 ${className}`}>
-      {images.map((img) => (
-        <div key={img.src} className="group relative aspect-[3/4] overflow-hidden rounded-2xl sm:rounded-3xl" data-cursor="44">
+      {images.map((img, i) => (
+        <div key={`${img.src}-${i}`} className="group relative aspect-[3/4] overflow-hidden rounded-2xl sm:rounded-3xl" data-cursor="44">
           <Image
             src={img.src}
             alt={img.alt}
@@ -43,12 +33,14 @@ function Column({ images, y, className = "" }: { images: (typeof columns)[number
   );
 }
 
-export function Gallery() {
+export function Gallery({ images }: { images: Img[] }) {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const y1 = useTransform(scrollYProgress, [0, 1], ["4%", "-14%"]);
   const y2 = useTransform(scrollYProgress, [0, 1], ["-16%", "2%"]);
   const y3 = useTransform(scrollYProgress, [0, 1], ["0%", "-20%"]);
+  const two = split(images, 2);
+  const three = split(images, 3);
 
   return (
     <section id="gallery" ref={ref} className="relative scroll-mt-20 overflow-hidden py-24 sm:py-32">
@@ -71,9 +63,13 @@ export function Gallery() {
       </div>
 
       <div className="mx-auto grid h-[110svh] max-w-7xl grid-cols-2 gap-4 overflow-hidden px-4 [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_82%,transparent)] sm:gap-6 sm:px-6 md:h-[130vh] md:grid-cols-3">
-        <Column images={columns[0]} y={y1} />
-        <Column images={columns[1]} y={y2} className="mt-16" />
-        <Column images={columns[2]} y={y3} className="hidden md:flex" />
+        {/* phone: 2 columns */}
+        <Column images={two[0]} y={y1} className="md:hidden" />
+        <Column images={two[1]} y={y2} className="mt-16 md:hidden" />
+        {/* tablet / desktop: 3 columns */}
+        <Column images={three[0]} y={y1} className="hidden md:flex" />
+        <Column images={three[1]} y={y2} className="mt-16 hidden md:flex" />
+        <Column images={three[2]} y={y3} className="hidden md:flex" />
       </div>
     </section>
   );

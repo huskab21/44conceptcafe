@@ -15,7 +15,7 @@ export async function guard(request: Request) {
  * the next visit kicks off a background refresh and every visit after that shows the edit (usually within seconds).
  * ({ expire: 0 } would block the page render and trips Next's "uncached data during prerendering" check.)
  */
-export function refresh(tag: "menu" | "wear") {
+export function refresh(tag: "menu" | "wear" | "gallery") {
   revalidateTag(tag, "max");
 }
 
@@ -76,6 +76,15 @@ export function parseWear(b: Record<string, unknown>) {
     gender: ["Унисекс", "Эрэгтэй", "Эмэгтэй"].includes(b.gender as string) ? (b.gender as string) : undefined,
     sort_order: int(b.sort_order, -100000, 100000),
     is_available: bool(b.is_available),
+  });
+}
+
+export function parseGallery(b: Record<string, unknown>) {
+  return clean({
+    image: image(b.image),
+    alt: str(b.alt, 120),
+    sort_order: int(b.sort_order, -100000, 100000),
+    is_visible: bool(b.is_visible),
   });
 }
 

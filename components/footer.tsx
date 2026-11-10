@@ -1,7 +1,7 @@
 import { cacheLife } from "next/cache";
 import Link from "next/link";
 import { site } from "@/lib/site";
-import { LogoMark } from "@/components/logo";
+import { Logo, LogoMark } from "@/components/logo";
 
 export function Footer() {
   return (
@@ -10,7 +10,7 @@ export function Footer() {
       <LogoMark className="pointer-events-none absolute -right-16 -bottom-24 h-[26rem] text-white/[0.03] sm:h-[34rem]" />
       <div className="relative mx-auto grid max-w-7xl gap-12 px-4 pt-20 pb-10 sm:px-6 md:grid-cols-12">
         <div className="relative md:col-span-5">
-          <LogoMark className="mb-8 h-14 text-cream" title="44 Concept Café" />
+          <Logo size="3.5rem" withText className="mb-8" />
           <p className="font-display text-4xl leading-tight text-cream sm:text-5xl">
             Selling
             <br />

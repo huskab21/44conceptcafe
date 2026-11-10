@@ -16,7 +16,8 @@ export async function POST(request: Request) {
   if (!ext) return Response.json({ error: "Зөвхөн JPG, PNG, WEBP, AVIF зураг." }, { status: 400 });
   if (file.size > MAX) return Response.json({ error: "Зураг 5MB-аас бага байх ёстой." }, { status: 400 });
 
-  const folder = form?.get("folder") === "wear" ? "wear" : "menu";
+  const f = form?.get("folder");
+  const folder = f === "wear" || f === "gallery" ? f : "menu";
   const path = `${folder}/${randomUUID()}.${ext}`;
   const { error } = await g.db.storage.from(MEDIA_BUCKET).upload(path, file, { contentType: file.type, cacheControl: "31536000" });
   if (error) return Response.json({ error: error.message }, { status: 500 });

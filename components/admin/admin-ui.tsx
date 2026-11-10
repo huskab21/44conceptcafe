@@ -15,7 +15,7 @@ export async function adminFetch<T>(auth: AdminHeaders, url: string, init: Reque
 }
 
 /** CRUD list for /api/admin/<kind>. */
-export function useAdminList<T extends { id: string }>(auth: AdminHeaders, kind: "menu" | "wear") {
+export function useAdminList<T extends { id: string }>(auth: AdminHeaders, kind: "menu" | "wear" | "gallery") {
   const [items, setItems] = useState<T[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const base = `/api/admin/${kind}`;
@@ -80,7 +80,7 @@ export function Toggle({ checked, onChange, label }: { checked: boolean; onChang
 }
 
 /** Image preview + upload to Supabase storage. */
-export function ImageField({ auth, value, onChange, folder }: { auth: AdminHeaders; value: string; onChange: (url: string) => void; folder: "menu" | "wear" }) {
+export function ImageField({ auth, value, onChange, folder }: { auth: AdminHeaders; value: string; onChange: (url: string) => void; folder: "menu" | "wear" | "gallery" }) {
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);

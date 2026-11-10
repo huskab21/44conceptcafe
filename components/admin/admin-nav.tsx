@@ -10,6 +10,7 @@ const TABS = [
   { href: "/admin/reservations", label: "Ширээ захиалга" },
   { href: "/admin/menu", label: "Меню" },
   { href: "/admin/wear", label: "Art Wear" },
+  { href: "/admin/gallery", label: "44 Мөчүүд" },
   { href: "/admin/qr", label: "Ширээний QR" },
 ];
 

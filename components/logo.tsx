@@ -49,7 +49,7 @@ export function Logo({
     <span className={`inline-flex items-center gap-3 leading-none ${color} ${className}`}>
       <LogoMark className="block shrink-0" style={{ height: size }} title="44 Concept Café" />
       {withText && (
-        <span className="flex flex-col gap-1 font-mono text-[0.6rem] font-bold tracking-[0.32em] uppercase">
+        <span className="flex flex-col gap-[0.35em] font-mono font-bold tracking-[0.32em] uppercase" style={{ fontSize: `max(0.6rem, calc(${size} * 0.22))` }}>
           <span>Concept</span>
           <span>Café</span>
         </span>
