@@ -5,6 +5,7 @@ import { AdminGate, type AdminHeaders } from "@/components/admin/admin-gate";
 import { Field, ImageField, inputCls, PageHead, SaveBar, Toggle, useAdminList } from "@/components/admin/admin-ui";
 import { categories, type MenuCategory, type MenuItem } from "@/lib/menu-data";
 import { formatPrice } from "@/lib/site";
+import { ReceiptSettings } from "@/components/admin/receipt-settings";
 
 type Draft = Omit<MenuItem, "id">;
 
@@ -123,6 +124,8 @@ function Editor({ auth }: { auth: AdminHeaders }) {
           {adding ? "Хаах" : "+ Шинэ бүтээгдэхүүн"}
         </button>
       </PageHead>
+
+      <ReceiptSettings auth={auth} />
 
       {adding && (
         <section className="mt-6">

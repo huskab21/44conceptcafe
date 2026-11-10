@@ -15,7 +15,7 @@ export async function guard(request: Request) {
  * the next visit kicks off a background refresh and every visit after that shows the edit (usually within seconds).
  * ({ expire: 0 } would block the page render and trips Next's "uncached data during prerendering" check.)
  */
-export function refresh(tag: "menu" | "wear" | "gallery") {
+export function refresh(tag: "menu" | "wear" | "gallery" | "settings") {
   revalidateTag(tag, "max");
 }
 

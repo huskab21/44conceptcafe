@@ -7,9 +7,10 @@ import { Barcode, Dashed, Printer, ReceiptPaper } from "@/components/ui/receipt"
 import { categories, type MenuCategory, type MenuItem } from "@/lib/menu-data";
 import { formatPrice, site } from "@/lib/site";
 import { LogoMark } from "@/components/logo";
+import type { ReceiptSettings } from "@/lib/settings-db";
 
 /** Menu printed as a thermal receipt. Picking a category re-prints it. */
-export function MenuSection({ items }: { items: MenuItem[] }) {
+export function MenuSection({ items, receipt }: { items: MenuItem[]; receipt: ReceiptSettings }) {
   const available = categories.filter((c) => items.some((i) => i.category === c.id));
   const [active, setActive] = useState<MenuCategory>(available.find((c) => c.id === "hot")?.id ?? available[0]?.id ?? "hot");
   const [printing, setPrinting] = useState(true);
@@ -114,12 +115,14 @@ export function MenuSection({ items }: { items: MenuItem[] }) {
                 <span>Нийт сонголт</span>
                 <span>{list.length}</span>
               </div>
-              <div className="flex justify-between text-[0.68rem] uppercase opacity-70">
-                <span>Ургамлын сүү</span>
-                <span>+₮1,500</span>
-              </div>
+              {receipt.receipt_extra_label && (
+                <div className="flex justify-between text-[0.68rem] uppercase opacity-70">
+                  <span>{receipt.receipt_extra_label}</span>
+                  <span>+{formatPrice(receipt.receipt_extra_price)}</span>
+                </div>
+              )}
               <Dashed />
-              <p className="text-center text-[0.68rem] tracking-[0.2em] uppercase">Баярлалаа · Дахин ирээрэй</p>
+              <p className="text-center text-[0.68rem] tracking-[0.2em] uppercase">{receipt.receipt_thanks}</p>
               <Barcode seed={active} />
               <p className="mt-1 text-center text-[0.6rem] tracking-[0.4em]">N°44-{active.toUpperCase()}</p>
             </ReceiptPaper>
