@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useMemo, useState, type FormEvent } from "react";
 import { FormError, SubmitButton } from "@/components/auth/auth-shell";
 import { useAuth } from "@/components/providers/auth-provider";
-import { createReservation, type Reservation } from "@/lib/backend";
+import { bookTable, type Reservation } from "@/lib/backend";
 import { formatPrice, reservation as rules, timeSlots } from "@/lib/site";
 
 const TZ = "Asia/Ulaanbaatar";
@@ -100,7 +100,7 @@ function Calendar({ today, value, onPick }: { today: string; value: string | nul
 
 const steps = ["Өдөр", "Цаг", "Мэдээлэл"] as const;
 
-export function ReservationForm({ next = "/reserve" }: { next?: string }) {
+export function ReservationForm() {
   const { user, loading } = useAuth();
   const [step, setStep] = useState(0);
   const [date, setDate] = useState<string | null>(null);
@@ -119,23 +119,6 @@ export function ReservationForm({ next = "/reserve" }: { next?: string }) {
 
   if (loading) {
     return <div className="h-96 animate-pulse rounded-3xl bg-ink-2" aria-busy />;
-  }
-
-  if (!user) {
-    return (
-      <div className="rounded-3xl border border-line bg-ink-2 p-8 text-center">
-        <p className="font-display text-3xl text-cream">Эхлээд нэвтэрнэ үү</p>
-        <p className="mt-3 text-cream-dim">Захиалгаа хянах, цуцлахын тулд бүртгэл шаардлагатай.</p>
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <Link href={`/login?next=${encodeURIComponent(next)}`} className="rounded-full bg-gold px-6 py-3 font-semibold text-ink">
-            Нэвтрэх
-          </Link>
-          <Link href={`/signup?next=${encodeURIComponent(next)}`} className="rounded-full border border-line px-6 py-3 text-cream hover:border-gold">
-            Бүртгүүлэх
-          </Link>
-        </div>
-      </div>
-    );
   }
 
   if (done) {
@@ -162,9 +145,11 @@ export function ReservationForm({ next = "/reserve" }: { next?: string }) {
           {formatPrice(rules.deposit)} deposit төлсний дараа захиалга баталгаажна. Deposit үндсэн төлбөрөөс хасагдана. Бид {done.phone} дугаарт холбогдоно.
         </p>
         <div className="relative mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <Link href="/account" className="rounded-full bg-gold px-6 py-3 font-semibold text-ink">
-            Миний захиалгууд
-          </Link>
+          {user && (
+            <Link href="/account" className="rounded-full bg-gold px-6 py-3 font-semibold text-ink">
+              Миний захиалгууд
+            </Link>
+          )}
           <button
             onClick={() => {
               setDone(null);
@@ -182,7 +167,7 @@ export function ReservationForm({ next = "/reserve" }: { next?: string }) {
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!user || !date || !time) return;
+    if (!date || !time) return;
     setError(null);
     const f = new FormData(e.currentTarget);
     const full_name = String(f.get("full_name") ?? "").trim();
@@ -196,7 +181,7 @@ export function ReservationForm({ next = "/reserve" }: { next?: string }) {
     if (isPast(time)) return setError("Энэ цаг өнгөрсөн байна. Өөр цаг сонгоно уу.");
 
     setSubmitting(true);
-    const res = await createReservation(user.id, { full_name, phone, date, time, guests, note: note || null, age_confirmed: true });
+    const res = await bookTable(user?.id ?? null, { full_name, phone, date, time, guests, note: note || null, age_confirmed: true });
     setSubmitting(false);
     if (!res.ok) return setError(res.error);
     setDone(res.data);
@@ -312,11 +297,11 @@ export function ReservationForm({ next = "/reserve" }: { next?: string }) {
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
                     <label htmlFor="full_name" className="field-label">Нэр</label>
-                    <input id="full_name" name="full_name" defaultValue={user.fullName} className="field" required autoComplete="name" />
+                    <input id="full_name" name="full_name" defaultValue={user?.fullName} className="field" required autoComplete="name" />
                   </div>
                   <div>
                     <label htmlFor="phone" className="field-label">Утас</label>
-                    <input id="phone" name="phone" type="tel" inputMode="tel" defaultValue={user.phone} className="field" required autoComplete="tel" />
+                    <input id="phone" name="phone" type="tel" inputMode="tel" defaultValue={user?.phone} className="field" required autoComplete="tel" />
                   </div>
                 </div>
                 <div>

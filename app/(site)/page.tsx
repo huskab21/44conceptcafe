@@ -1,4 +1,3 @@
-import { About } from "@/components/home/about";
 import { ArtWear } from "@/components/home/art-wear";
 import { BeerShowcase } from "@/components/home/beer";
 import { Gallery } from "@/components/home/gallery";
@@ -9,7 +8,6 @@ import { MenuSection } from "@/components/home/menu-section";
 import { ReserveCta } from "@/components/home/reserve-cta";
 import { ReviewDeal } from "@/components/home/review-deal";
 import { Signature } from "@/components/home/signature";
-import { ToyRoom } from "@/components/home/toy-room";
 import { Visit } from "@/components/home/visit";
 import { getMenu } from "@/lib/menu";
 import { getWear } from "@/lib/wear-db";
@@ -25,8 +23,6 @@ export default async function Home() {
     <main>
       <Hero featured={signature[0]} />
       <Marquee />
-      <About />
-      <ToyRoom />
       {featured.length > 0 && <Signature items={featured} />}
       <MenuSection items={menu} />
       <BeerShowcase />

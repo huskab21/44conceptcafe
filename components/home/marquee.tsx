@@ -21,7 +21,7 @@ export function Marquee() {
       <div className="-rotate-3 bg-gold py-4 text-ink sm:py-5">
         <Row />
       </div>
-      <div className="camo mt-[-1.75rem] rotate-2 border-y-4 border-ink py-4 text-cream [text-shadow:2px_2px_0_#120c08] sm:mt-[-2.5rem] sm:py-5">
+      <div className="camo mt-[-1.75rem] rotate-2 border-y-4 border-ink py-4 text-cream [text-shadow:2px_2px_0_#0a0a0a] sm:mt-[-2.5rem] sm:py-5">
         <Row reverse />
       </div>
     </section>

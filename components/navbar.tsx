@@ -12,7 +12,7 @@ import { Logo } from "@/components/logo";
 
 const links = [
   { href: "/#menu", label: "Меню" },
-  { href: "/#about", label: "Бидний тухай" },
+  { href: "/#wear", label: "Art Wear" },
   { href: "/#gallery", label: "Галерей" },
   { href: "/#visit", label: "Байршил" },
 ];

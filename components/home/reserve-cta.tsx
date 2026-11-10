@@ -126,7 +126,7 @@ function Receipt() {
           </p>
           <Link
             href="/reserve"
-            className="group flex items-center justify-between bg-[#111] px-[1em] py-[0.7em] text-[0.82em] font-bold tracking-[0.12em] text-white transition-colors hover:bg-[#3a2416]"
+            className="group flex items-center justify-between bg-[#111] px-[1em] py-[0.7em] text-[0.82em] font-bold tracking-[0.12em] text-white transition-colors hover:bg-[#2a2a2a]"
             data-cursor="Захиалах"
           >
             Захиалах

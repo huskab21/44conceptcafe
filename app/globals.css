@@ -3,13 +3,13 @@
 
 /* ───────────── 44 Concept Café — design tokens ───────────── */
 :root {
-  --ink: #120c08;          /* roasted-brown black – page background */
-  --ink-2: #1a120c;        /* raised surface */
-  --ink-3: #24190f;        /* cards / inputs */
-  --line: #36271b;         /* hairlines */
-  --cream: #f4ede3;        /* primary text */
-  --cream-dim: #bfae9b;    /* secondary text */
-  --muted: #8d7b68;        /* tertiary text */
+  --ink: #0a0a0a;          /* jet black – page background */
+  --ink-2: #121212;        /* raised surface */
+  --ink-3: #1b1b1b;        /* cards / inputs */
+  --line: #2a2a2a;         /* hairlines */
+  --cream: #f4f1ec;        /* primary text */
+  --cream-dim: #b4afa8;    /* secondary text */
+  --muted: #7c7873;        /* tertiary text */
   --gold: #d9a46c;         /* caramel accent */
   --gold-soft: #ecc9a0;
   --rose: #d98c7a;         /* gelato accent, used sparingly */
@@ -135,8 +135,8 @@ body {
 /* Warm roasted glow behind dark sections */
 .brew-glow {
   background:
-    radial-gradient(ellipse 60% 55% at 55% 35%, rgb(120 66 30 / 0.55), transparent 70%),
-    radial-gradient(ellipse 40% 40% at 85% 70%, rgb(90 48 20 / 0.35), transparent 70%),
+    radial-gradient(ellipse 60% 55% at 55% 35%, rgb(255 255 255 / 0.07), transparent 70%),
+    radial-gradient(ellipse 40% 40% at 85% 70%, rgb(217 164 108 / 0.06), transparent 70%),
     var(--ink);
 }
 
@@ -228,9 +228,9 @@ body {
 }
 
 /* ───────────── 44 HYPE: streetwear / designer-toy layer ───────────── */
-/* Coffee-tone camo (original pattern, public/images/decor/camo-coffee.svg). */
+/* Black-on-black camo (original pattern, public/images/decor/camo-coffee.svg). */
 .camo {
-  background-color: #3b2617;
+  background-color: #161616;
   background-image: url("/images/decor/camo-coffee.svg");
   background-size: 320px 320px;
 }

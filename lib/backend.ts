@@ -264,3 +264,20 @@ export async function authHeader(): Promise<Record<string, string>> {
   if (data.session) h.Authorization = `Bearer ${data.session.access_token}`;
   return h;
 }
+
+/** Book a table — works without an account; signed-in guests get it linked to their account. */
+export async function bookTable(userId: string | null, input: NewReservation): Promise<Result<Reservation>> {
+  if (!isSupabaseConfigured) return createReservation(userId ?? "guest", input);
+  try {
+    const res = await fetch("/api/reservations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(await authHeader()) },
+      body: JSON.stringify(input),
+    });
+    const json = (await res.json().catch(() => ({}))) as { reservation?: Reservation; error?: string };
+    if (!res.ok || !json.reservation) return { ok: false, error: json.error ?? "Захиалга илгээхэд алдаа гарлаа." };
+    return { ok: true, data: json.reservation };
+  } catch {
+    return { ok: false, error: "Сүлжээний алдаа. Дахин оролдоно уу." };
+  }
+}

@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useMotionValue, useMotionValueEvent, useScroll, useTransform, type MotionValue } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { motion, useMotionValue, useScroll, useTransform, type MotionValue } from "motion/react";
+import { useRef, useState } from "react";
 import { HERO_CLIPS, HeroVideo } from "@/components/home/hero-video";
 import { Eyebrow } from "@/components/ui/motion";
 import type { MenuItem } from "@/lib/menu-data";
@@ -10,40 +10,6 @@ import { formatPrice } from "@/lib/site";
 
 const INTRO = 1.9; // seconds – waits for the preloader curtain
 const ease = [0.22, 1, 0.36, 1] as const;
-const words = ["өглөөнд", "мөчид", "сэтгэлд", "найзуудад"];
-
-/** Handwritten word that types, pauses, deletes and moves to the next one. */
-function TypedWord() {
-  const [index, setIndex] = useState(0);
-  const [length, setLength] = useState(0);
-  const [deleting, setDeleting] = useState(false);
-  const word = words[index];
-
-  useEffect(() => {
-    const done = !deleting && length === word.length;
-    const empty = deleting && length === 0;
-    const delay = done ? 1800 : empty ? 300 : deleting ? 45 : 95;
-    const t = setTimeout(
-      () => {
-        if (done) setDeleting(true);
-        else if (empty) {
-          setDeleting(false);
-          setIndex((i) => (i + 1) % words.length);
-        } else setLength((l) => l + (deleting ? -1 : 1));
-      },
-      length === 0 && !deleting && index === 0 ? INTRO * 1000 + 600 : delay,
-    );
-    return () => clearTimeout(t);
-  }, [length, deleting, word, index]);
-
-  return (
-    <span className="relative inline-block min-h-[1em] min-w-[2ch]">
-      {word.slice(0, length)}
-      <span className="ml-1 inline-block h-[0.8em] w-[3px] animate-pulse bg-gold-soft align-middle" aria-hidden />
-    </span>
-  );
-}
-
 /** One segment per clip: fills as that clip plays, click to jump to it. */
 function ClipBar({ index, active, progress, label, onSelect }: {
   index: number;
@@ -79,11 +45,6 @@ export function Hero({ featured }: { featured?: MenuItem }) {
   const speed = useMotionValue(1);
   const [clip, setClip] = useState(0);
   const [request, setRequest] = useState<{ index: number } | null>(null);
-  const [speedLabel, setSpeedLabel] = useState("1.0×");
-  useMotionValueEvent(speed, "change", (v) => {
-    const label = `${v.toFixed(1)}×`;
-    setSpeedLabel((prev) => (prev === label ? prev : label));
-  });
 
   // Scroll: video sinks slower than the page, copy drifts and fades
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
@@ -119,8 +80,8 @@ export function Hero({ featured }: { featured?: MenuItem }) {
             <Eyebrow>44 Concept Café · Meru Tower 2 давхар</Eyebrow>
           </motion.div>
 
-          <h1 className="mt-4 font-display text-[15vw] md:mt-6 text-cream sm:text-[12vw] lg:text-[7.4rem]">
-            {["Кофе", "таны"].map((w, i) => (
+          <h1 className="mt-5 font-display text-[19vw] leading-[0.86] text-cream uppercase sm:text-[13vw] md:mt-6 lg:text-[9.5rem]">
+            {["Selling", "the"].map((w, i) => (
               <span key={w} className="block overflow-hidden pb-[0.04em]">
                 <motion.span
                   className="block"
@@ -132,35 +93,21 @@ export function Hero({ featured }: { featured?: MenuItem }) {
                 </motion.span>
               </span>
             ))}
-            <em className="-mt-[0.05em] block text-[0.82em] leading-[1] sm:pl-[0.9em]">
-              <TypedWord />
-            </em>
+            <motion.em
+              className="-mt-[0.02em] block text-[0.95em] leading-[1] normal-case sm:pl-[0.6em]"
+              initial={{ opacity: 0, x: -30, rotate: -4 }}
+              animate={{ opacity: 1, x: 0, rotate: -4 }}
+              transition={{ delay: INTRO + 0.3, duration: 1, ease }}
+            >
+              vibe.
+            </motion.em>
           </h1>
-
-          <motion.p
-            initial={{ opacity: 0, x: -16 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: INTRO + 0.35, duration: 0.9, ease }}
-            className="mt-6 flex items-center gap-4 font-mono md:mt-8 text-[0.72rem] font-bold tracking-[0.45em] text-gold uppercase sm:text-xs"
-          >
-            <span className="h-px w-10 bg-gold/60 sm:w-16" aria-hidden />
-            Selling the vibe
-          </motion.p>
-
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: INTRO + 0.45, duration: 0.9, ease }}
-            className="mt-5 max-w-xs text-sm leading-snug font-bold tracking-tight text-cream uppercase sm:text-[0.95rem]"
-          >
-            Жижиг багцаар шарсан үр, гараар бэлдсэн аяга бүр. <span className="text-cream-dim">Art Deco орчинд.</span>
-          </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: INTRO + 0.6, duration: 0.9, ease }}
-            className="mt-8 flex items-center gap-8 md:mt-10"
+            className="mt-10 flex items-center gap-8 md:mt-12"
           >
             <Link href="/#menu" className="group relative inline-flex items-center gap-2 text-sm font-bold tracking-wide text-cream uppercase">
               Меню үзэх
@@ -213,10 +160,7 @@ export function Hero({ featured }: { featured?: MenuItem }) {
             />
           ))}
         </div>
-        <span className="hidden sm:inline" aria-hidden>Scroll ↓ · хурдлуулна</span>
-        <span className="tabular-nums" aria-hidden>
-          <span className={speedLabel === "1.0×" ? "text-muted" : "text-gold"}>{speedLabel}</span> · N°44
-        </span>
+        <span className="hidden sm:inline" aria-hidden>Scroll ↓</span>
       </motion.div>
     </section>
   );

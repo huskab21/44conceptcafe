@@ -74,7 +74,7 @@ export function ReserveDialog() {
                 ✕
               </button>
             </div>
-            <ReservationForm next="/reserve" />
+            <ReservationForm />
           </motion.div>
         </>
       )}

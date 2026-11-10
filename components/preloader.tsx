@@ -3,47 +3,44 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useLenis } from "lenis/react";
 import { useEffect, useState } from "react";
-import { Logo } from "@/components/logo";
 
-const CUP = "M40 40 H160 L148 176 Q100 184 52 176 Z";
-const HANDLE = "M158 70 Q196 74 192 108 Q188 140 152 142";
+const ease = [0.22, 1, 0.36, 1] as const;
 
 /**
- * Intro: a cup is drawn, fills with coffee, then tips and pours away while the
- * curtain lifts. Mounted once in the root layout; skipped for reduced motion.
+ * Intro: the 44 Concept Café wordmark builds itself — "44" rises in, "concept" is written on,
+ * "CAFÉ" spells out, a gold rule sweeps under it with the tagline — then the curtain lifts.
+ * Mounted once in the root layout; skipped for reduced motion.
  */
 export function Preloader() {
-  const [phase, setPhase] = useState<"draw" | "pour" | "done">("draw");
+  const [done, setDone] = useState(false);
   const lenis = useLenis();
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) {
-      const t = setTimeout(() => setPhase("done"), 0);
+      const t = setTimeout(() => setDone(true), 0);
       return () => clearTimeout(t);
     }
     document.documentElement.style.overflow = "hidden";
-    const t1 = setTimeout(() => setPhase("pour"), 1500);
-    const t2 = setTimeout(() => setPhase("done"), 2150);
+    const t = setTimeout(() => setDone(true), 2150);
     return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
+      clearTimeout(t);
       document.documentElement.style.overflow = "";
     };
   }, []);
 
   useEffect(() => {
-    if (phase === "done") {
+    if (done) {
       document.documentElement.style.overflow = "";
       lenis?.start();
     } else {
       lenis?.stop();
     }
-  }, [phase, lenis]);
+  }, [done, lenis]);
 
   return (
     <AnimatePresence>
-      {phase !== "done" && (
+      {!done && (
         <motion.div
           key="preloader"
           className="brew-glow fixed inset-0 z-[100] flex flex-col items-center justify-center"
@@ -51,81 +48,71 @@ export function Preloader() {
           exit={{ clipPath: "inset(0 0 100% 0)" }}
           transition={{ duration: 0.9, ease: [0.76, 0, 0.24, 1] }}
         >
-          <motion.svg
-            viewBox="0 0 220 220"
-            className="w-40 overflow-visible sm:w-48"
-            animate={phase === "pour" ? { rotate: -115, x: -40, y: -10 } : { rotate: 0 }}
-            transition={{ duration: 0.65, ease: [0.65, 0, 0.35, 1] }}
-            style={{ originX: "30%", originY: "80%" }}
+          <div
+            aria-label="44 Concept Café"
+            role="img"
+            className="flex items-center gap-[0.22em] leading-none"
+            style={{ fontSize: "clamp(3.2rem, 15vw, 6.5rem)" }}
+          >
+            {/* 44 */}
+            <span className="flex font-deco text-[1.15em] font-semibold tracking-[-0.06em] text-cream" aria-hidden>
+              {["4", "4"].map((d, i) => (
+                <span key={i} className="block overflow-hidden pb-[0.06em]">
+                  <motion.span
+                    className="block"
+                    initial={{ y: "110%" }}
+                    animate={{ y: "0%" }}
+                    transition={{ delay: 0.1 + i * 0.1, duration: 0.8, ease }}
+                  >
+                    {d}
+                  </motion.span>
+                </span>
+              ))}
+            </span>
+
+            <span className="flex flex-col items-center" aria-hidden>
+              {/* concept — written on left to right */}
+              <motion.span
+                className="font-script text-[0.82em] leading-[0.8] text-gold-soft"
+                initial={{ clipPath: "inset(0 100% 0 0)" }}
+                animate={{ clipPath: "inset(0 0% 0 0)" }}
+                transition={{ delay: 0.55, duration: 0.7, ease: "easeInOut" }}
+              >
+                concept
+              </motion.span>
+              {/* CAFÉ — spelled out */}
+              <span className="mt-[0.08em] flex font-deco text-[0.42em] font-bold text-cream uppercase" style={{ marginRight: "-0.42em" }}>
+                {"Café".split("").map((c, i) => (
+                  <motion.span
+                    key={i}
+                    className="inline-block"
+                    style={{ marginRight: "0.42em" }}
+                    initial={{ opacity: 0, y: "0.5em" }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1 + i * 0.07, duration: 0.5, ease }}
+                  >
+                    {c}
+                  </motion.span>
+                ))}
+              </span>
+            </span>
+          </div>
+
+          {/* gold rule + tagline */}
+          <motion.span
+            className="mt-8 block h-px w-40 origin-left bg-gold sm:w-56"
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ delay: 1.15, duration: 0.6, ease }}
             aria-hidden
-          >
-            <defs>
-              <clipPath id="pre-cup">
-                <path d={CUP} />
-              </clipPath>
-            </defs>
-
-            {/* coffee filling up */}
-            <g clipPath="url(#pre-cup)">
-              <motion.rect
-                x="0"
-                width="220"
-                height="200"
-                fill="#6b3a1a"
-                initial={{ y: 190 }}
-                animate={phase === "pour" ? { y: -220 } : { y: 52 }}
-                transition={phase === "pour" ? { duration: 0.5, ease: "easeIn" } : { delay: 0.6, duration: 0.9, ease: [0.45, 0, 0.2, 1] }}
-              />
-              <motion.rect
-                x="0"
-                width="220"
-                height="8"
-                fill="#c98b55"
-                initial={{ y: 186 }}
-                animate={phase === "pour" ? { y: -222 } : { y: 50 }}
-                transition={phase === "pour" ? { duration: 0.5, ease: "easeIn" } : { delay: 0.6, duration: 0.9, ease: [0.45, 0, 0.2, 1] }}
-              />
-            </g>
-
-            {/* outline drawn in */}
-            <motion.path
-              d={CUP}
-              fill="none"
-              stroke="#f4ede3"
-              strokeWidth="4"
-              strokeLinejoin="round"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              transition={{ duration: 0.7, ease: "easeInOut" }}
-            />
-            <motion.path
-              d={HANDLE}
-              fill="none"
-              stroke="#f4ede3"
-              strokeWidth="4"
-              strokeLinecap="round"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              transition={{ delay: 0.4, duration: 0.4, ease: "easeOut" }}
-            />
-
-          </motion.svg>
-
+          />
           <motion.p
-            className="mt-10 font-deco text-3xl font-semibold tracking-[-0.06em] text-cream"
-            initial={{ opacity: 0, y: 10 }}
+            className="mt-4 font-mono text-[0.68rem] font-bold tracking-[0.45em] text-gold uppercase"
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
+            transition={{ delay: 1.3, duration: 0.7, ease }}
           >
-            <Logo size="1.9rem" />
-          </motion.p>
-          <motion.p
-            className="mt-3 font-mono text-[0.65rem] tracking-[0.3em] text-cream-dim uppercase"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            {"// Кофе бэлдэж байна"}
+            Selling the vibe
           </motion.p>
         </motion.div>
       )}
