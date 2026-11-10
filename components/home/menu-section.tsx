@@ -6,6 +6,7 @@ import { Eyebrow } from "@/components/ui/motion";
 import { Barcode, Dashed, Printer, ReceiptPaper } from "@/components/ui/receipt";
 import { categories, type MenuCategory, type MenuItem } from "@/lib/menu-data";
 import { formatPrice, site } from "@/lib/site";
+import { LogoMark } from "@/components/logo";
 
 /** Menu printed as a thermal receipt. Picking a category re-prints it. */
 export function MenuSection({ items }: { items: MenuItem[] }) {
@@ -78,7 +79,7 @@ export function MenuSection({ items }: { items: MenuItem[] }) {
               onPrinted={() => setPrinting(false)}
             >
               <div className="text-center">
-                <p className="font-deco text-3xl font-semibold tracking-[-0.06em]">44</p>
+                <LogoMark className="mx-auto h-10" />
                 <p className="text-[0.68rem] tracking-[0.3em] uppercase">Concept Café</p>
                 <p className="mt-2 text-[0.65rem] leading-snug opacity-70">{site.address}</p>
               </div>

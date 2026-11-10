@@ -77,7 +77,7 @@ export function Navbar() {
           <span className="lg:hidden" />
 
           <Link href="/" className="flex items-center gap-1.5 justify-self-center" aria-label={`${site.name} — нүүр`}>
-            <Logo size="1.6rem" />
+            <Logo size="2rem" className="transition-transform duration-500 hover:rotate-180" />
           </Link>
 
           <div className="flex items-center justify-end gap-6">

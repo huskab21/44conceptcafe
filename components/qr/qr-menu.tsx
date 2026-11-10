@@ -407,7 +407,7 @@ export function QrMenu({ table, tableKey, items }: { table: number; tableKey: st
 function Header({ table }: { table: number }) {
   return (
     <header className="flex items-center justify-between">
-      <Logo size="1.5rem" />
+      <Logo size="2rem" withText />
       <span className="rounded-full border border-gold/50 px-4 py-1.5 font-mono text-[0.65rem] tracking-[0.2em] text-gold uppercase">Ширээ {table}</span>
     </header>
   );

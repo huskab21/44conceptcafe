@@ -4,6 +4,7 @@ import Image from "next/image";
 import { motion, useMotionValue, useScroll, useSpring, useTransform } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { Typewriter } from "@/components/ui/typewriter";
+import { LogoMark } from "@/components/logo";
 
 const TZ = "Asia/Ulaanbaatar";
 
@@ -179,9 +180,7 @@ export function HoursClock() {
                 />
                 {/* print on the glass */}
                 <div className="pointer-events-none absolute inset-x-0 top-[44%] text-center mix-blend-multiply">
-                  <p className="font-deco text-[clamp(1.1rem,2.2vw,2.1rem)] leading-none font-semibold tracking-[-0.06em] text-[#1d140d]">
-                    44
-                  </p>
+                  <LogoMark className="mx-auto h-[clamp(1.4rem,2.8vw,2.6rem)] text-[#1d140d]" />
                   <p className="mt-[0.5em] text-[clamp(0.4rem,0.62vw,0.62rem)] font-bold tracking-[0.18em] text-[#1d140d] uppercase">
                     Iced latte
                   </p>

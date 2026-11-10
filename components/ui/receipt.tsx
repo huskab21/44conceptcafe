@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
 export function Printer({ children, printing = false }: { children: ReactNode; printing?: boolean }) {
   return (
     <div className="relative mx-auto w-full max-w-[26rem]">
-      <div className="relative z-10 rounded-t-[1.6rem] rounded-b-lg border border-white/10 bg-gradient-to-b from-[#2a211a] to-[#120d09] px-6 pt-5 pb-4 shadow-[0_30px_60px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.08)]">
+      <div className="relative z-10 rounded-t-[1.6rem] rounded-b-lg border border-white/10 bg-gradient-to-b from-[#262626] to-[#0d0d0d] px-6 pt-5 pb-4 shadow-[0_30px_60px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.08)]">
         <div className="flex items-center justify-between font-mono text-[0.6rem] tracking-[0.25em] text-cream-dim uppercase">
           <span>44 · Thermal</span>
           <span className="flex items-center gap-2">

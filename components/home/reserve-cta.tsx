@@ -6,6 +6,7 @@ import { motion, useScroll, useSpring, useTransform } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { Typewriter } from "@/components/ui/typewriter";
 import { site } from "@/lib/site";
+import { LogoMark } from "@/components/logo";
 
 const ink = "#161616";
 
@@ -76,9 +77,7 @@ function Receipt() {
     <div className="receipt-edge relative bg-[#f1f0ec] px-[1.75em] pb-[2.4em] text-[clamp(9px,0.72vw,12px)] leading-[1.75] tracking-[0.06em] text-[#1f1f1f] uppercase shadow-[0_30px_60px_rgba(0,0,0,0.45)] [--tooth:0.85em]">
       {/* product */}
       <div className="relative -mx-[1.75em] flex h-[17em] flex-col items-center justify-end overflow-hidden pb-[1.2em]">
-        <p className="mb-[0.3em] font-deco text-[3em] leading-none font-semibold tracking-[-0.06em] text-[#161616] normal-case">
-          44<span className="ml-[0.2em] align-top font-script text-[0.45em] font-bold tracking-normal">concept</span>
-        </p>
+        <LogoMark className="mb-[0.6em] h-[3.4em] text-[#161616]" />
         <Image
           src="/images/cutouts/matcha.webp"
           alt="Matcha latte"

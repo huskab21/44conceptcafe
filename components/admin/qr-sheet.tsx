@@ -60,7 +60,7 @@ function Sheet({ auth }: { auth: AdminHeaders }) {
         {cards.map((c) => (
           <article key={c.table} className="flex break-inside-avoid flex-col items-center rounded-3xl bg-[#f3ece2] p-6 text-center text-[#120c08] print:rounded-none print:border print:border-dashed print:border-black/30">
             <p>
-              <Logo size="1.5rem" tone="dark" />
+              <Logo size="2.6rem" tone="dark" withText />
             </p>
             <div className="mt-4 aspect-square w-full max-w-[180px]" dangerouslySetInnerHTML={{ __html: c.svg }} />
             <p className="mt-4 font-mono text-[0.6rem] tracking-[0.25em] uppercase opacity-70">Уншуулаад захиал</p>

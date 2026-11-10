@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { LogoMark } from "@/components/logo";
 
 const TABS = [
   { href: "/admin", label: "Шууд захиалга" },
@@ -16,8 +17,8 @@ export function AdminNav() {
   const path = usePathname();
   return (
     <nav aria-label="Admin" className="no-scrollbar sticky top-0 z-30 flex gap-1.5 overflow-x-auto border-b border-white/10 bg-ink/90 px-4 py-3 backdrop-blur-md sm:px-6 print:hidden">
-      <Link href="/" className="mr-2 shrink-0 self-center font-deco text-xl font-semibold tracking-[-0.06em] text-cream" aria-label="Сайт руу буцах">
-        44
+      <Link href="/" className="mr-2 shrink-0 self-center text-cream" aria-label="Сайт руу буцах">
+        <LogoMark className="h-6" />
       </Link>
       {TABS.map((t) => {
         const active = path === t.href;
