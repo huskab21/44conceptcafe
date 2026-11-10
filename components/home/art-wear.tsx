@@ -50,14 +50,14 @@ function ProductCard({ item, index, active, onSelect }: { item: WearItem; index:
         <span>N°{String(index + 1).padStart(2, "0")}</span>
         <span className={`text-lg leading-none transition-transform duration-500 group-hover:rotate-90 ${active ? "text-gold" : "text-cream"}`}>+</span>
       </div>
-      <div className="mt-2 flex items-start justify-between gap-3">
+      <div className="mt-2 flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
         <div>
           <h3 className="font-display text-xl leading-[1.05] text-cream">
             <ScrambleText text={item.name} delay={(index % 4) * 120} />
           </h3>
           <p className="mt-1 text-xs text-cream-dim">{item.kind}</p>
         </div>
-        <span className="shrink-0 font-mono text-xs text-cream tabular-nums">{formatPrice(item.price)}</span>
+        <span className="shrink-0 font-mono text-xs text-gold-soft tabular-nums sm:text-cream">{formatPrice(item.price)}</span>
       </div>
 
       <div className="relative my-4 flex aspect-[4/4.2] items-center justify-center">

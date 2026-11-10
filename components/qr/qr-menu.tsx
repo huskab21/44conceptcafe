@@ -352,7 +352,7 @@ export function QrMenu({ table, tableKey, items }: { table: number; tableKey: st
                   onChange={(e) => setNote(e.target.value.slice(0, 200))}
                   rows={2}
                   placeholder="Жишээ нь: сахаргүй, овъёосны сүүтэй"
-                  className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-ink px-4 py-3 text-sm text-cream placeholder:text-muted focus:border-gold focus:outline-none"
+                  className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-ink px-4 py-3 text-base text-cream placeholder:text-muted focus:border-gold focus:outline-none"
                 />
               </label>
 

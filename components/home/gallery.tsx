@@ -62,7 +62,7 @@ export function Gallery({ images }: { images: Img[] }) {
         </a>
       </div>
 
-      <div className="mx-auto grid h-[110svh] max-w-7xl grid-cols-2 gap-4 overflow-hidden px-4 [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_82%,transparent)] sm:gap-6 sm:px-6 md:h-[130vh] md:grid-cols-3">
+      <div className="mx-auto grid h-[110svh] max-w-7xl grid-cols-2 gap-4 overflow-hidden px-4 [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_82%,transparent)] [-webkit-mask-image:linear-gradient(to_bottom,transparent,black_10%,black_82%,transparent)] sm:gap-6 sm:px-6 md:h-[130vh] md:grid-cols-3">
         {/* phone: 2 columns */}
         <Column images={two[0]} y={y1} className="md:hidden" />
         <Column images={two[1]} y={y2} className="mt-16 md:hidden" />

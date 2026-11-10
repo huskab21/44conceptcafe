@@ -277,7 +277,7 @@ export function BeerShowcase() {
       ref={section}
       id="beer"
       aria-label="Пиво"
-      className="relative h-[100svh] min-h-[720px] overflow-hidden text-cream"
+      className="relative h-[130svh] min-h-[940px] overflow-hidden text-cream lg:h-[100svh] lg:min-h-[720px]"
       style={
         {
           "--beer-inner": theme.inner,
@@ -314,7 +314,7 @@ export function BeerShowcase() {
               Ширээ захиалах
               <span className="flex size-[38px] items-center justify-center rounded-full bg-gold pb-0.5 text-[1.4rem] leading-none font-black text-ink">+</span>
             </Link>
-            <div className="mt-auto flex items-center gap-4">
+            <div className="mt-auto hidden items-center gap-4 lg:flex">
               <div className="flex size-12 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-gold">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
                   <path d="M12 15L15 18L19 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -337,8 +337,8 @@ export function BeerShowcase() {
             className="pointer-events-none absolute inset-0 z-[1] transition-opacity duration-[1500ms]"
             style={{ opacity: ready && inView ? 1 : 0, animation: "beer-float 6s ease-in-out infinite" }}
           >
-            <div className="absolute top-1/2 left-1/2 size-[62%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(217,164,108,0.18),transparent_65%)]" />
-            <div ref={canvasWrap} className="absolute inset-0">
+            <div className="absolute top-[72%] left-1/2 size-[62%] -translate-x-1/2 -translate-y-1/2 rounded-full lg:top-1/2 bg-[radial-gradient(circle,rgba(217,164,108,0.18),transparent_65%)]" />
+            <div ref={canvasWrap} className="absolute inset-x-0 top-[50%] bottom-24 lg:inset-0">
               <canvas ref={canvas} className="h-full w-full" aria-label={BEERS[beer].name} />
             </div>
           </div>
