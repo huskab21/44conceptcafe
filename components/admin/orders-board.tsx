@@ -203,8 +203,8 @@ function Board({ auth, logout }: { auth: AdminHeaders; logout: () => void }) {
                           {o.paid_at && col.next.status === "paid" ? "Дуусгах ✓" : col.next.label}
                         </button>
                       )}
-                      <button type="button" onClick={() => printReceipt(o)} aria-label={`Ширээ ${o.table_no} захиалга хэвлэх`} className="rounded-full border border-white/15 px-3 font-mono text-[0.75rem] text-cream hover:border-gold">
-                        🖨
+                      <button type="button" onClick={() => printReceipt(o)} aria-label={`Ширээ ${o.table_no} захиалга хэвлэх`} className="rounded-full border border-white/15 px-3 font-mono text-[0.6rem] tracking-[0.1em] text-cream uppercase hover:border-gold">
+                        🖨 Хэвлэх
                       </button>
                       {o.status !== "paid" && (
                         <button type="button" onClick={() => move(o.id, "cancelled")} className="rounded-full border border-white/10 px-3 font-mono text-[0.6rem] tracking-[0.1em] text-muted uppercase hover:border-danger hover:text-danger">

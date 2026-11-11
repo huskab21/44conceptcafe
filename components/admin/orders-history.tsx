@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AdminGate, type AdminHeaders } from "@/components/admin/admin-gate";
 import { adminFetch, PageHead } from "@/components/admin/admin-ui";
 import { formatPrice } from "@/lib/site";
+import { printReceipt } from "@/components/admin/print-receipt";
 
 type Order = {
   id: string;
@@ -155,6 +156,13 @@ function History({ auth }: { auth: AdminHeaders }) {
                   {o.discount > 0 && <p className="mt-2 text-gold">2+1 урамшуулал −{formatPrice(o.discount)}</p>}
                   {o.note && <p className="mt-2">📝 {o.note}</p>}
                   {o.paid_at && <p className="mt-2 text-gold">✓ Онлайнаар төлөгдсөн · {when(o.paid_at)}</p>}
+                  <button
+                    type="button"
+                    onClick={() => printReceipt(o)}
+                    className="mt-3 rounded-full border border-white/20 px-4 py-2 font-mono text-[0.65rem] tracking-[0.15em] text-cream uppercase hover:border-gold"
+                  >
+                    🖨 Баримт хэвлэх
+                  </button>
                 </div>
               )}
             </li>
