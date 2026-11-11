@@ -190,7 +190,7 @@ function Board({ auth, logout }: { auth: AdminHeaders; logout: () => void }) {
                       ))}
                     </ul>
                     {o.paid_at && (
-                      <p className="mt-2 inline-block rounded-full bg-gold/15 px-3 py-1 font-mono text-[0.6rem] tracking-[0.15em] text-gold uppercase">✓ Bonum-оор төлөгдсөн</p>
+                      <p className="mt-2 inline-block rounded-full bg-gold/15 px-3 py-1 font-mono text-[0.6rem] tracking-[0.15em] text-gold uppercase">✓ Онлайнаар төлөгдсөн</p>
                     )}
                     {o.note && <p className="mt-3 rounded-lg bg-white/5 px-3 py-2 text-xs text-cream-dim">📝 {o.note}</p>}
                     <div className="mt-3 flex items-baseline justify-between border-t border-white/10 pt-3 font-mono text-sm tabular-nums">

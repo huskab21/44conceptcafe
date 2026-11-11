@@ -6,7 +6,7 @@ import { getServerSupabase } from "./supabase";
 /* ───────────── types ───────────── */
 
 /**
- * awaiting_payment → (Bonum webhook) → new → preparing → served → paid.
+ * awaiting_payment → (Wire payment confirmed) → new → preparing → served → paid.
  * Orders that are still awaiting payment never reach the staff board.
  */
 export type OrderStatus = "awaiting_payment" | "new" | "preparing" | "served" | "paid" | "cancelled";
@@ -25,11 +25,11 @@ export type Order = {
   total: number;
   status: OrderStatus;
   created_at: string;
-  /** Our id for the Bonum invoice (`transactionId`). */
+  /** Our order reference sent to Wire (idempotency key + metadata.order_ref). */
   payment_ref: string | null;
   invoice_id: string | null;
   pay_url: string | null;
-  /** Set when Bonum confirms the payment. */
+  /** Set when Wire confirms the payment. */
   paid_at: string | null;
   /** Signed-in guest who placed it (shown on their /account page). */
   user_id?: string | null;
@@ -171,6 +171,15 @@ export function attachInvoice(id: string, invoice: { invoice_id: string; pay_url
   return patchOrder(id, invoice);
 }
 
+/** Finds the order by its Wire PaymentIntent id (pi_...). */
+export async function getOrderByInvoiceId(invoiceId: string): Promise<Order | null> {
+  if (db) {
+    const { data } = await db.from("orders").select("*").eq("invoice_id", invoiceId).maybeSingle();
+    return (data as Order) ?? null;
+  }
+  return mem.__orders44!.find((o) => o.invoice_id === invoiceId) ?? null;
+}
+
 export async function getOrderByPaymentRef(ref: string): Promise<Order | null> {
   if (db) {
     const { data } = await db.from("orders").select("*").eq("payment_ref", ref).maybeSingle();
@@ -180,7 +189,7 @@ export async function getOrderByPaymentRef(ref: string): Promise<Order | null> {
 }
 
 /**
- * Bonum confirmed the payment: awaiting_payment → new (now visible on the staff board).
+ * Wire confirmed the payment: awaiting_payment → new (now visible on the staff board).
  * Idempotent — returns null when the order was already moved on, so the caller notifies staff only once.
  */
 export async function markPaid(id: string): Promise<Order | null> {

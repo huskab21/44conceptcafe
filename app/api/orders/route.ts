@@ -2,7 +2,7 @@ import { after, type NextRequest } from "next/server";
 import { getMenu } from "@/lib/menu";
 import { notifyNewOrder } from "@/lib/notify";
 import { randomBytes } from "node:crypto";
-import { bonumEnabled, createInvoice } from "@/lib/bonum";
+import { wireEnabled, createCheckout } from "@/lib/wire";
 import { attachInvoice, createOrder, isAdmin, isValidTable, listOrders, setOrderStatus, userIdFrom, type OrderLine } from "@/lib/orders";
 import { totals } from "@/lib/promo";
 
@@ -39,8 +39,8 @@ export async function POST(request: NextRequest) {
   const t = totals(lines);
   const note = typeof body.note === "string" ? body.note.trim().slice(0, 200) || null : null;
 
-  // With Bonum configured the guest pays first; the order only reaches the staff board once Bonum confirms payment.
-  const prepay = bonumEnabled && t.total > 0;
+  // With Wire configured the guest pays first (QPay etc.); the order only reaches the staff board once Wire confirms payment.
+  const prepay = wireEnabled && t.total > 0;
 
   try {
     const order = await createOrder({
@@ -63,17 +63,17 @@ export async function POST(request: NextRequest) {
     try {
       const back = new URL(`/t/${table}`, process.env.NEXT_PUBLIC_SITE_URL || request.nextUrl.origin);
       if (typeof body.key === "string" && body.key) back.searchParams.set("k", body.key);
-      const invoice = await createInvoice({
+      const checkout = await createCheckout({
         amount: order.total,
-        transactionId: order.payment_ref!,
-        callback: back.toString(),
-        expiresIn: 15 * 60,
-        items: lines.map((l) => ({ title: l.item.name, amount: l.item.price, count: l.qty })),
+        ref: order.payment_ref!,
+        description: `44 Concept Café · Ширээ ${table} · #${order.number}`,
+        successUrl: back.toString(),
+        cancelUrl: back.toString(),
       });
-      const withInvoice = await attachInvoice(order.id, { invoice_id: invoice.invoiceId, pay_url: invoice.followUpLink });
+      const withInvoice = await attachInvoice(order.id, { invoice_id: checkout.intentId, pay_url: checkout.url });
       return Response.json({ order: withInvoice ?? order }, { status: 201 });
     } catch (e) {
-      console.error("[orders] bonum invoice failed:", e);
+      console.error("[orders] wire checkout failed:", e);
       await setOrderStatus(order.id, "cancelled").catch(() => null);
       return Response.json({ error: "Төлбөрийн нэхэмжлэх үүсгэж чадсангүй. Дахин оролдоно уу эсвэл ажилтанд хандана уу." }, { status: 502 });
     }

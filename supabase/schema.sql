@@ -151,7 +151,7 @@ create table if not exists public.orders (
   paid_at     timestamptz
 );
 
--- Bonum payments (safe to re-run on an existing database)
+-- Online payments (Wire) (safe to re-run on an existing database)
 alter table public.orders add column if not exists payment_ref text unique;
 alter table public.orders add column if not exists invoice_id  text;
 alter table public.orders add column if not exists pay_url     text;

@@ -128,7 +128,7 @@ export function QrMenu({ table, tableKey, items }: { table: number; tableKey: st
       try {
         sessionStorage.setItem(storeKey, JSON.stringify(p));
       } catch {}
-      // Prepaid flow: go straight to Bonum's payment page; it redirects back to this table page afterwards.
+      // Prepaid flow: go straight to Wire's payment page (QPay etc.); it redirects back to this table page afterwards.
       if (p.status === "awaiting_payment" && p.pay_url) {
         window.location.assign(p.pay_url);
         return;
@@ -191,7 +191,7 @@ export function QrMenu({ table, tableKey, items }: { table: number; tableKey: st
                 )}
               </>
             ) : placed.paid_at ? (
-              <p className="mt-3 text-sm leading-relaxed text-gold-soft">✓ Bonum-оор төлөгдсөн. Баярлалаа!</p>
+              <p className="mt-3 text-sm leading-relaxed text-gold-soft">✓ Онлайнаар төлөгдсөн. Баярлалаа!</p>
             ) : (
               <p className="mt-3 text-sm leading-relaxed text-cream-dim">
                 Төлбөрөө кассанд эсвэл ажилтнаар QR / картаар төлнө үү. Ширээ <b className="text-cream">{table}</b> гэж хэлэхэд болно.

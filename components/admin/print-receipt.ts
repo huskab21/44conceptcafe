@@ -45,7 +45,7 @@ export function printReceipt(o: PrintableOrder) {
       ${o.discount > 0 ? `<tr><td>2+1 урамшуулал</td><td class="r">−${money(o.discount)}</td></tr>` : ""}
       <tr class="tot"><td>НИЙТ</td><td class="r">${money(o.total)}</td></tr>
     </table>
-    ${o.paid_at ? `<p class="c">✓ ТӨЛӨГДСӨН (Bonum)</p>` : ""}
+    ${o.paid_at ? `<p class="c">✓ ТӨЛӨГДСӨН (онлайн)</p>` : ""}
     ${o.note ? `<p class="note">ТЭМДЭГЛЭЛ: ${esc(o.note)}</p>` : ""}
     <hr><p class="c">Баярлалаа!</p>
   </body></html>`;

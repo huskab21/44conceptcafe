@@ -154,7 +154,7 @@ function History({ auth }: { auth: AdminHeaders }) {
                   </ul>
                   {o.discount > 0 && <p className="mt-2 text-gold">2+1 урамшуулал −{formatPrice(o.discount)}</p>}
                   {o.note && <p className="mt-2">📝 {o.note}</p>}
-                  {o.paid_at && <p className="mt-2 text-gold">✓ Bonum-оор төлөгдсөн · {when(o.paid_at)}</p>}
+                  {o.paid_at && <p className="mt-2 text-gold">✓ Онлайнаар төлөгдсөн · {when(o.paid_at)}</p>}
                 </div>
               )}
             </li>

@@ -1,7 +1,7 @@
 import { after, type NextRequest } from "next/server";
-import { bonumIsTest, invoiceIsPaid } from "@/lib/bonum";
 import { notifyNewOrder } from "@/lib/notify";
-import { getOrder, isAdmin, markPaid, setOrderStatus, type OrderStatus } from "@/lib/orders";
+import { getOrder, isAdmin, setOrderStatus, type OrderStatus } from "@/lib/orders";
+import { syncPayment } from "@/lib/payment";
 
 /** Guest polls their own order's status (the id is an unguessable uuid). */
 export async function GET(_request: NextRequest, ctx: RouteContext<"/api/orders/[id]">) {
@@ -9,12 +9,14 @@ export async function GET(_request: NextRequest, ctx: RouteContext<"/api/orders/
   let order = await getOrder(id);
   if (!order) return Response.json({ error: "Олдсонгүй." }, { status: 404 });
 
-  // Local testing against Bonum's TEST api has no public webhook URL, so ask Bonum directly (test env only).
-  if (order.status === "awaiting_payment" && order.invoice_id && bonumIsTest && (await invoiceIsPaid(order.invoice_id))) {
-    const paid = await markPaid(order.id);
-    if (paid) {
-      after(() => notifyNewOrder(paid));
-      order = paid;
+  // Ask Wire directly too, so payment is confirmed even without (or before) the webhook.
+  if (order.status === "awaiting_payment" && order.invoice_id) {
+    try {
+      const paid = await syncPayment(order);
+      if (paid) after(() => notifyNewOrder(paid));
+      order = (await getOrder(id)) ?? order;
+    } catch (e) {
+      console.error("[orders] wire status check failed:", e);
     }
   }
 
@@ -22,7 +24,7 @@ export async function GET(_request: NextRequest, ctx: RouteContext<"/api/orders/
   return Response.json({ order: { id: oid, number, total, status, pay_url, paid_at } });
 }
 
-/** Staff can move a paid order along: new → preparing → served → paid (or cancel). Payment itself is only confirmed by Bonum. */
+/** Staff can move a paid order along: new → preparing → served → paid (or cancel). Payment itself is only confirmed by Wire. */
 const STAFF_STATUSES: OrderStatus[] = ["new", "preparing", "served", "paid", "cancelled"];
 
 export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/orders/[id]">) {
