@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { FormError, SubmitButton } from "@/components/auth/auth-shell";
 import { useAuth } from "@/components/providers/auth-provider";
 import { bookTable, type Reservation } from "@/lib/backend";
@@ -98,6 +98,88 @@ function Calendar({ today, value, onPick }: { today: string; value: string | nul
   );
 }
 
+type DepositState = { id: string; date: string; time: string; guests: number; status: string; deposit: number; deposit_paid: boolean; pay_url: string | null; phone: string };
+
+/** Shown when the guest comes back from the deposit payment page (`/reserve?r=<id>`). */
+function DepositStatus({ id, onNew }: { id: string; onNew: () => void }) {
+  const [r, setR] = useState<DepositState | null>(null);
+  const [failed, setFailed] = useState(false);
+  const settled = Boolean(r && (r.deposit_paid || r.status === "cancelled"));
+
+  useEffect(() => {
+    if (settled) return;
+    let alive = true;
+    const load = async () => {
+      const res = await fetch(`/api/reservations/${id}`, { cache: "no-store" }).catch(() => null);
+      if (!alive) return;
+      if (!res?.ok) return setFailed(true);
+      setR(((await res.json()) as { reservation: DepositState }).reservation);
+    };
+    load();
+    const t = setInterval(load, 3000);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
+  }, [id, settled]);
+
+  const box = "relative overflow-hidden rounded-3xl border border-gold/40 bg-ink-2 p-8 text-center sm:p-12";
+  if (failed && !r) {
+    return (
+      <div className={box}>
+        <p className="text-cream">Захиалга олдсонгүй.</p>
+        <button onClick={onNew} className="mt-6 rounded-full border border-line px-6 py-3 text-cream hover:border-gold">Шинээр захиалах</button>
+      </div>
+    );
+  }
+  if (!r) return <div className="h-96 animate-pulse rounded-3xl bg-ink-2" aria-busy />;
+
+  const when = `${r.date} · ${r.time} · ${r.guests} хүн`;
+  if (r.deposit_paid) {
+    return (
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className={box}>
+        <div className="deco-rays absolute inset-0" aria-hidden />
+        <motion.div
+          initial={{ scale: 0, rotate: -90 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: "spring", stiffness: 200, damping: 14, delay: 0.1 }}
+          className="relative mx-auto grid size-20 place-items-center rounded-full bg-gold text-3xl text-ink"
+        >
+          ✓
+        </motion.div>
+        <h2 className="relative mt-6 font-display text-4xl text-cream">Ширээ баталгаажлаа!</h2>
+        <p className="relative mt-3 text-cream-dim">{when}</p>
+        <p className="relative mt-4 rounded-2xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-gold-soft">
+          ✓ {formatPrice(r.deposit)} deposit төлөгдлөө. Deposit үндсэн төлбөрөөс хасагдана. Уулзъя!
+        </p>
+        <button onClick={onNew} className="relative mt-8 rounded-full border border-line px-6 py-3 text-cream hover:border-gold">Дахин захиалах</button>
+      </motion.div>
+    );
+  }
+  if (r.status === "cancelled") {
+    return (
+      <div className={box}>
+        <h2 className="font-display text-3xl text-cream">Захиалга цуцлагдсан</h2>
+        <p className="mt-3 text-sm text-cream-dim">Deposit төлөгдөөгүй тул ширээ чөлөөлөгдсөн. Дахин захиалаарай.</p>
+        <button onClick={onNew} className="mt-6 rounded-full bg-gold px-6 py-3 font-semibold text-ink">Шинээр захиалах</button>
+      </div>
+    );
+  }
+  return (
+    <div className={box}>
+      <div className="mx-auto size-10 animate-spin rounded-full border-2 border-gold/30 border-t-gold" aria-hidden />
+      <h2 className="mt-6 font-display text-3xl text-cream">Deposit хүлээж байна…</h2>
+      <p className="mt-3 text-cream-dim">{when}</p>
+      <p className="mt-4 text-sm text-cream-dim">Төлбөр баталгаажмагц энэ хуудас автоматаар шинэчлэгдэнэ.</p>
+      {r.pay_url && (
+        <a href={r.pay_url} className="mt-6 inline-block rounded-full bg-gold px-6 py-3 font-semibold text-ink">
+          {formatPrice(r.deposit)} төлөх
+        </a>
+      )}
+    </div>
+  );
+}
+
 const steps = ["Өдөр", "Цаг", "Мэдээлэл"] as const;
 
 export function ReservationForm() {
@@ -114,12 +196,25 @@ export function ReservationForm() {
   // Client-only; the form renders after auth has loaded (post-hydration), so markup still matches.
   const [now] = useState(() => (typeof window === "undefined" ? null : nowInUB()));
 
+  // Back from the deposit payment page: /reserve?r=<reservation id>
+  const [returnId, setReturnId] = useState<string | null>(null);
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("r");
+    if (id) setTimeout(() => setReturnId(id), 0);
+  }, []);
+  function startOver() {
+    setReturnId(null);
+    window.history.replaceState(null, "", "/reserve");
+  }
+
   const slots = useMemo(() => timeSlots(), []);
   const isPast = (t: string) => Boolean(now && date === now.date && t <= now.time);
 
   if (loading) {
     return <div className="h-96 animate-pulse rounded-3xl bg-ink-2" aria-busy />;
   }
+
+  if (returnId) return <DepositStatus id={returnId} onNew={startOver} />;
 
   if (done) {
     return (
@@ -184,6 +279,12 @@ export function ReservationForm() {
     const res = await bookTable(user?.id ?? null, { full_name, phone, date, time, guests, note: note || null, age_confirmed: true });
     setSubmitting(false);
     if (!res.ok) return setError(res.error);
+    // Online deposit: go straight to the payment page (QPay etc.); it brings the guest back to /reserve?r=<id>.
+    if (res.data.pay_url) {
+      setSubmitting(true);
+      window.location.assign(res.data.pay_url);
+      return;
+    }
     setDone(res.data);
   }
 

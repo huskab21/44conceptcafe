@@ -61,14 +61,18 @@ export type BookingNotice = {
   full_name: string;
   phone: string;
   date: string; // YYYY-MM-DD
-  time: string; // HH:MM
+  time: string; // HH:MM[:SS]
   guests: number;
   note: string | null;
   deposit: number;
+  deposit_paid?: boolean;
 };
 
 export function notifyNewReservation(r: BookingNotice) {
-  const short = `44 cafe: Ширээ захиалга — ${r.date} ${r.time}, ${r.guests} хүн. ${r.full_name} ${r.phone}. Deposit ${r.deposit.toLocaleString("en-US")}₮ хүлээгдэж байна.`;
-  const rich = `📅 Шинэ ширээ захиалга\n${r.date} · ${r.time} · ${r.guests} хүн\n👤 ${r.full_name}\n📞 ${r.phone}${r.note ? `\n📝 ${r.note}` : ""}\n💰 Deposit ${r.deposit.toLocaleString("en-US")}₮ — хүлээгдэж байна`;
+  const time = r.time.slice(0, 5);
+  const amount = `${r.deposit.toLocaleString("en-US")}₮`;
+  const depositLine = r.deposit_paid ? `✅ Deposit ${amount} онлайнаар төлөгдсөн — баталгаажсан` : `💰 Deposit ${amount} — хүлээгдэж байна`;
+  const short = `44 cafe: Ширээ захиалга — ${r.date} ${time}, ${r.guests} хүн. ${r.full_name} ${r.phone}. ${r.deposit_paid ? `Deposit ${amount} төлөгдсөн.` : `Deposit ${amount} хүлээгдэж байна.`}`;
+  const rich = `📅 Шинэ ширээ захиалга\n${r.date} · ${time} · ${r.guests} хүн\n👤 ${r.full_name}\n📞 ${r.phone}${r.note ? `\n📝 ${r.note}` : ""}\n${depositLine}`;
   return notifyStaff(short, rich);
 }

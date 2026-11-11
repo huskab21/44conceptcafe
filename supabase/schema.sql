@@ -272,3 +272,10 @@ $$;
 -- ═════════════ ORDERS ↔ ACCOUNTS (guest sees their own QR orders on /account) ═════════════
 alter table public.orders add column if not exists user_id uuid references auth.users (id) on delete set null;
 create index if not exists orders_user_idx on public.orders (user_id, created_at desc);
+
+-- ═════════════ RESERVATIONS: online deposit (Wire / QPay) ═════════════
+alter table public.reservations add column if not exists payment_ref text unique;
+alter table public.reservations add column if not exists invoice_id  text;
+alter table public.reservations add column if not exists pay_url     text;
+alter table public.reservations add column if not exists paid_at     timestamptz;
+create index if not exists reservations_invoice_idx on public.reservations (invoice_id);

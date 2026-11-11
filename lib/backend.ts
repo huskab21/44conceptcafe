@@ -37,6 +37,8 @@ export type Reservation = {
   deposit_paid: boolean;
   /** Guest confirmed they are 21+ (checked again at the door). */
   age_confirmed: boolean;
+  /** Online deposit payment page (Wire / QPay) — set when the deposit is paid online. */
+  pay_url?: string | null;
 };
 
 export type NewReservation = Pick<Reservation, "full_name" | "phone" | "date" | "time" | "guests" | "note" | "age_confirmed">;

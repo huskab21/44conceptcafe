@@ -1,5 +1,8 @@
 import { after, type NextRequest } from "next/server";
+import { randomBytes } from "node:crypto";
 import { notifyNewReservation } from "@/lib/notify";
+import { attachReservationInvoice, cancelReservation, expireUnpaid } from "@/lib/reservations";
+import { createCheckout, wireEnabled } from "@/lib/wire";
 import { userIdFrom } from "@/lib/orders";
 import { reservation as rules, timeSlots } from "@/lib/site";
 import { adminDb } from "@/lib/supabase-admin";
@@ -19,6 +22,9 @@ const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
 /**
  * Guest books a table — no account needed. Signed-in guests get the booking linked to their account
  * (so it shows under "Миний захиалга"). Date/time/capacity/age rules are enforced again by the DB trigger.
+ *
+ * With Wire configured the guest pays the deposit online (QPay etc.) right away; the booking is confirmed and
+ * staff are notified once Wire confirms it. Unpaid online bookings are released after a while (lib/reservations).
  */
 export async function POST(request: NextRequest) {
   if (!adminDb) return Response.json({ error: "Захиалга түр ажиллахгүй байна." }, { status: 503 });
@@ -47,6 +53,9 @@ export async function POST(request: NextRequest) {
   if (!(guests >= 1 && guests <= rules.maxGuests)) return Response.json({ error: "Хүний тоо буруу байна." }, { status: 400 });
   if (b.age_confirmed !== true) return Response.json({ error: `Ширээ захиалга зөвхөн ${rules.minAge} нас хүрсэн хүнд.` }, { status: 400 });
 
+  const prepay = wireEnabled && rules.deposit > 0;
+  if (prepay) await expireUnpaid(); // free seats held by abandoned payments before checking capacity
+
   const { data, error } = await adminDb
     .from("reservations")
     .insert({
@@ -61,6 +70,7 @@ export async function POST(request: NextRequest) {
       status: "pending",
       deposit: rules.deposit,
       deposit_paid: false,
+      ...(prepay ? { payment_ref: `R44${randomBytes(6).toString("hex").toUpperCase()}` } : {}),
     })
     .select()
     .single();
@@ -79,6 +89,26 @@ export async function POST(request: NextRequest) {
     if (msg.startsWith("Захиалга илгээхэд")) console.error("[reservations]", m);
     return Response.json({ error: msg }, { status: 400 });
   }
-  after(() => notifyNewReservation(data));
-  return Response.json({ reservation: data }, { status: 201 });
+  if (!prepay) {
+    after(() => notifyNewReservation(data));
+    return Response.json({ reservation: data }, { status: 201 });
+  }
+
+  try {
+    const back = new URL("/reserve", process.env.NEXT_PUBLIC_SITE_URL || request.nextUrl.origin);
+    back.searchParams.set("r", data.id);
+    const checkout = await createCheckout({
+      amount: rules.deposit,
+      ref: data.payment_ref,
+      description: `44 Concept Café · Ширээ захиалга ${date} ${time} · ${guests} хүн`,
+      successUrl: back.toString(),
+      cancelUrl: back.toString(),
+    });
+    const withInvoice = await attachReservationInvoice(data.id, { invoice_id: checkout.intentId, pay_url: checkout.url });
+    return Response.json({ reservation: withInvoice ?? data }, { status: 201 });
+  } catch (e) {
+    console.error("[reservations] wire checkout failed:", e);
+    await cancelReservation(data.id).catch(() => null);
+    return Response.json({ error: "Deposit-ийн нэхэмжлэх үүсгэж чадсангүй. Дахин оролдоно уу." }, { status: 502 });
+  }
 }
