@@ -64,14 +64,9 @@ function ItemForm({
     <article className={`grid gap-4 rounded-3xl border p-4 sm:grid-cols-[140px_1fr] ${d.is_available ? "border-white/10 bg-ink-2/60" : "border-white/5 bg-ink-2/20 opacity-70"}`}>
       <ImageField auth={auth} folder="menu" value={d.image} onChange={(url) => set("image", url)} />
       <div className="grid gap-3">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Нэр">
-            <input className={inputCls} value={d.name} onChange={(e) => set("name", e.target.value)} maxLength={80} />
-          </Field>
-          <Field label="Англи нэр">
-            <input className={inputCls} value={d.name_en} onChange={(e) => set("name_en", e.target.value)} maxLength={80} />
-          </Field>
-        </div>
+        <Field label="Нэр (монгол эсвэл гадаад — сайт дээр яг ингэж харагдана)">
+          <input className={inputCls} value={d.name} onChange={(e) => set("name", e.target.value)} maxLength={80} />
+        </Field>
         <Field label="Тайлбар">
           <textarea className={`${inputCls} resize-none`} rows={2} value={d.description} onChange={(e) => set("description", e.target.value)} maxLength={300} />
         </Field>
@@ -99,7 +94,7 @@ function ItemForm({
         {error && <p role="alert" className="text-sm text-danger">{error}</p>}
         {saved && !dirty && !isNew && <p className="text-xs text-success">✓ Хадгалагдлаа. Сайт дээр шууд шинэчлэгдэнэ.</p>}
         <SaveBar
-          dirty={isNew ? Boolean(d.name && d.name_en) : dirty}
+          dirty={isNew ? Boolean(d.name) : dirty}
           busy={busy}
           onSave={() => run(() => onSave(d))}
           onReset={isNew ? undefined : () => setD(base)}

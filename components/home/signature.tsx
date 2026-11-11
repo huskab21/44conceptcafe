@@ -4,7 +4,7 @@ import Image from "next/image";
 import { motion, useMotionTemplate, useMotionValue, useMotionValueEvent, useScroll, useSpring, useTransform } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { Eyebrow, Reveal } from "@/components/ui/motion";
-import type { MenuItem } from "@/lib/menu-data";
+import { categories, type MenuItem } from "@/lib/menu-data";
 import { formatPrice } from "@/lib/site";
 
 /** Product card that leans toward the cursor with a moving glare. */
@@ -50,7 +50,7 @@ function TiltCard({ item, index }: { item: MenuItem; index: number }) {
           </span>
         </div>
         <div className="relative flex flex-1 flex-col p-5" style={{ transform: "translateZ(40px)" }}>
-          <p className="font-mono text-[0.65rem] tracking-widest text-gold uppercase">{item.name_en}</p>
+          <p className="font-mono text-[0.65rem] tracking-widest text-gold uppercase">{categories.find((c) => c.id === item.category)?.en}</p>
           <h3 className="mt-2 font-display text-2xl text-cream">{item.name}</h3>
           <p className="mt-2 text-sm text-cream-dim">{item.description}</p>
           <div className="mt-auto flex items-center justify-between border-t border-white/10 pt-4">

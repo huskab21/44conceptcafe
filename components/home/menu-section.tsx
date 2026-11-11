@@ -103,9 +103,7 @@ export function MenuSection({ items, receipt }: { items: MenuItem[]; receipt: Re
                       <span className="mb-1 flex-1 border-b border-dotted border-[#1c1611]/40" aria-hidden />
                       <span className="font-semibold tabular-nums">{formatPrice(item.price)}</span>
                     </div>
-                    <p className="text-[0.66rem] leading-snug opacity-65">
-                      {item.name_en} — {item.description}
-                    </p>
+                    {item.description && <p className="text-[0.66rem] leading-snug opacity-65">{item.description}</p>}
                   </li>
                 ))}
               </ul>

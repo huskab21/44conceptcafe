@@ -4,7 +4,7 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { categories, type MenuItem } from "@/lib/menu-data";
-import { totals } from "@/lib/promo";
+import { BEER_PROMO, totals } from "@/lib/promo";
 import { useAuth } from "@/components/providers/auth-provider";
 import { authHeader } from "@/lib/backend";
 import { formatPrice, site } from "@/lib/site";
@@ -222,7 +222,7 @@ export function QrMenu({ table, tableKey, items }: { table: number; tableKey: st
         </h1>
         <p className="mt-3 text-sm text-cream-dim">Сонгоод захиалаарай — ширээнд тань авчирна.</p>
 
-        <a
+        {BEER_PROMO && <a
           href="#beer"
           className="mt-6 flex items-center gap-4 overflow-hidden rounded-2xl border border-gold/40 bg-[radial-gradient(circle_at_85%_50%,rgba(217,164,108,0.28),transparent_60%)] p-4"
         >
@@ -231,7 +231,7 @@ export function QrMenu({ table, tableKey, items }: { table: number; tableKey: st
             <span className="block font-mono text-[0.62rem] tracking-[0.2em] text-gold uppercase">Пивоны урамшуулал</span>
             <span className="mt-1 block text-sm text-cream">2 пиво авбал 1 нь бэлэг 🍺</span>
           </span>
-        </a>
+        </a>}
       </div>
 
       {/* category chips */}
@@ -339,7 +339,7 @@ export function QrMenu({ table, tableKey, items }: { table: number; tableKey: st
                 ))}
               </ul>
 
-              {beerCount > 0 && t.free === 0 && (
+              {BEER_PROMO && beerCount > 0 && t.free === 0 && (
                 <p className="mt-3 rounded-xl bg-gold/10 px-4 py-3 text-xs text-gold-soft">
                   🍺 Дахиад {3 - (beerCount % 3)} пиво нэмбэл 1 нь бэлэг!
                 </p>

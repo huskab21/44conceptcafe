@@ -24,7 +24,7 @@ export const categories: { id: MenuCategory; label: string; en: string }[] = [
   { id: "cold", label: "Хүйтэн", en: "Iced" },
   { id: "gelato", label: "Желато", en: "Gelato" },
   { id: "dessert", label: "Амттан", en: "Dessert" },
-  { id: "beer", label: "Пиво · 2+1", en: "Beer" },
+  { id: "beer", label: "Пиво", en: "Beer" },
 ];
 
 type Seed = Omit<MenuItem, "id" | "is_available" | "sort_order" | "is_signature"> & {
@@ -61,7 +61,7 @@ const seed: Seed[] = [
   { category: "dessert", name: "Шоколадтай күүки", name_en: "Chocolate Cookie", description: "Гаднаа шаржигнуур, дотроо зөөлөн", price: 4900, image: "/images/cookies.webp" },
   { category: "dessert", name: "Шоколадан бялуу", name_en: "Chocolate Cake", description: "Бельги шоколад, ганаш", price: 11500, image: "/images/cake.webp" },
 
-  // Beer — 2 авбал 1 бэлэг (see lib/promo.ts). Prices are placeholders.
+  // Beer — 2+1 promo is switched by BEER_PROMO in lib/promo.ts. Prices are placeholders.
   { category: "beer", name: "Sapporo Premium", name_en: "Sapporo Premium", description: "Япон лагер · 330ml · 5.0%", price: 9900, image: "/images/beer/sapporo.webp" },
   { category: "beer", name: "Kirin Ichiban", name_en: "Kirin Ichiban", description: "Япон лагер · 650ml · 5.0%", price: 14900, image: "/images/beer/kirin.webp" },
   { category: "beer", name: "Corona Extra", name_en: "Corona Extra", description: "Мексик лагер · 330ml · 4.5%", price: 9900, image: "/images/beer/corona.webp" },

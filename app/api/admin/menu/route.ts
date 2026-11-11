@@ -13,9 +13,11 @@ export async function POST(request: Request) {
   const g = await guard(request);
   if ("error" in g) return g.error;
   const item = parseMenu(await body(request));
-  if (!item.name || !item.name_en || !item.category || item.price === undefined) {
-    return Response.json({ error: "Нэр, англи нэр, ангилал, үнэ заавал." }, { status: 400 });
+  if (!item.name || !item.category || item.price === undefined) {
+    return Response.json({ error: "Нэр, ангилал, үнэ заавал." }, { status: 400 });
   }
+  // One name is entered in the admin; the (required, unique) name_en column just mirrors it for new items.
+  item.name_en ??= item.name;
   const { data, error } = await g.db.from("menu_items").insert(item).select("*").single();
   if (error) return Response.json({ error: error.message }, { status: 400 });
   refresh("menu");

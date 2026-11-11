@@ -5,6 +5,7 @@ import Link from "next/link";
 import { animate, useInView } from "motion/react";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { BottleId, BottleScene } from "@/components/home/bottle-3d";
+import { BEER_PROMO } from "@/lib/promo";
 
 /* ───────────── Beer showcase ─────────────
  * A real 3D bottle (three.js lathe built from the product photo) leans toward the cursor over a warm
@@ -373,9 +374,9 @@ export function BeerShowcase() {
                         className="pointer-events-none -mt-28 h-[128px] w-auto drop-shadow-[0_20px_35px_rgba(0,0,0,0.5)] transition-transform duration-500 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] group-hover:-translate-y-[30px] group-hover:scale-[1.15] group-hover:-rotate-12"
                         style={{ filter: active ? undefined : "brightness(0.7)" }}
                       />
-                      <span className="absolute -top-2.5 -right-2.5 grid size-8 rotate-12 place-items-center rounded-full bg-gold font-mono text-[0.6rem] font-bold text-ink shadow-[0_6px_14px_rgba(0,0,0,0.4)] transition-transform duration-500 group-hover:rotate-[372deg]">
+                      {BEER_PROMO && <span className="absolute -top-2.5 -right-2.5 grid size-8 rotate-12 place-items-center rounded-full bg-gold font-mono text-[0.6rem] font-bold text-ink shadow-[0_6px_14px_rgba(0,0,0,0.4)] transition-transform duration-500 group-hover:rotate-[372deg]">
                         2+1
-                      </span>
+                      </span>}
                       <span className="flex w-full flex-col font-mono text-[0.58rem] tracking-wide uppercase">
                         <span className="text-cream">{b.name}</span>
                         <span className="text-cream-dim">{b.spec}</span>
@@ -407,7 +408,7 @@ export function BeerShowcase() {
         </div>
       </div>
 
-      <PromoStamp />
+      {BEER_PROMO && <PromoStamp />}
 
       {/* mobile switcher */}
       <div className="absolute inset-x-0 bottom-8 z-[120] flex flex-wrap justify-center gap-2 px-4 lg:hidden">
