@@ -1,5 +1,6 @@
 import "server-only";
 import type { Order } from "./orders";
+import { postToViber, viberEnabled } from "./viber";
 
 /**
  * Tell the staff about a new order. Every channel is optional and configured by env vars:
@@ -9,6 +10,7 @@ import type { Order } from "./orders";
  *     https://api.provider.mn/send?key=XXXX&to={to}&text={text}
  *   SMS_TO is a comma-separated list of staff phone numbers.
  * - Telegram (free, instant, good fallback): TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID.
+ * - Viber Channel: VIBER_CHANNEL_TOKEN (see lib/viber.ts).
  *
  * Failures are logged and never block the guest's order.
  */
@@ -37,6 +39,15 @@ export async function notifyNewOrder(order: Order) {
         body: JSON.stringify({ chat_id: tgChat, text }),
         signal: AbortSignal.timeout(6000),
       }),
+    );
+  }
+
+  if (viberEnabled) {
+    const items = order.lines.map((l) => `• ${l.qty}× ${l.name}`).join("\n");
+    jobs.push(
+      postToViber(
+        `🔔 Шинэ захиалга — Ширээ ${order.table_no} (#${String(order.number).padStart(3, "0")})\n${items}\nНийт: ${order.total.toLocaleString("en-US")}₮${order.paid_at ? " ✓ Төлөгдсөн" : ""}${order.note ? `\n📝 ${order.note}` : ""}`,
+      ),
     );
   }
 

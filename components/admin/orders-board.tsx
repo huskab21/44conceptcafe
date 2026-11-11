@@ -77,6 +77,14 @@ function Board({ auth, logout }: { auth: AdminHeaders; logout: () => void }) {
   }
   const seen = useRef<Set<string> | null>(null);
 
+  const [notifyMsg, setNotifyMsg] = useState<string | null>(null);
+  async function testNotify() {
+    setNotifyMsg("Илгээж байна…");
+    const res = await fetch("/api/admin/notify-test", { method: "POST", headers: await auth() }).catch(() => null);
+    const data = (await res?.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+    setNotifyMsg(data?.ok ? "✓ Viber руу тест мессеж илгээлээ." : `Viber: ${data?.error ?? "алдаа гарлаа"}`);
+  }
+
   const btName = useSyncExternalStore(onBtChange, btPrinterName, () => null);
   const canBt = useSyncExternalStore(onBtChange, btSupported, () => false);
   const [btError, setBtError] = useState<string | null>(null);
@@ -186,6 +194,9 @@ function Board({ auth, logout }: { auth: AdminHeaders; logout: () => void }) {
               </button>
             )
           )}
+          <button type="button" onClick={testNotify} title="Viber channel руу тест мессеж илгээнэ" className="rounded-full border border-white/20 px-4 py-2 text-cream hover:border-gold">
+            💬 Viber тест
+          </button>
           <button type="button" onClick={logout} className="rounded-full px-3 py-2 text-muted hover:text-cream">
             Гарах
           </button>
@@ -194,6 +205,7 @@ function Board({ auth, logout }: { auth: AdminHeaders; logout: () => void }) {
 
       {error && <p role="alert" className="mt-4 text-sm text-danger">{error}</p>}
       {btError && <p role="alert" className="mt-4 text-sm text-danger">{btError}</p>}
+      {notifyMsg && <p role="status" className="mt-4 text-sm text-cream-dim">{notifyMsg}</p>}
 
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {COLUMNS.map((col) => {
