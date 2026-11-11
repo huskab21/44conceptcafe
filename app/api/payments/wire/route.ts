@@ -11,6 +11,14 @@ import { syncPayment } from "@/lib/payment";
  *
  * The event is only a hint: the payment is re-checked with Wire before the order moves on.
  */
+/**
+ * Wire's dashboard "Баталгаажуулах" check reaches the URL with GET and only needs a 2xx.
+ * It changes nothing — orders only move on via the signed POST events (or the guest's status poll).
+ */
+export function GET() {
+  return Response.json({ ok: true });
+}
+
 export async function POST(request: NextRequest) {
   const raw = await request.text();
   if (!verifyWebhook(raw, request.headers.get("wirepayment-signature"))) {
