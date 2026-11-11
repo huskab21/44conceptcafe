@@ -1,4 +1,5 @@
-import type { NextRequest } from "next/server";
+import { after, type NextRequest } from "next/server";
+import { notifyNewReservation } from "@/lib/notify";
 import { userIdFrom } from "@/lib/orders";
 import { reservation as rules, timeSlots } from "@/lib/site";
 import { adminDb } from "@/lib/supabase-admin";
@@ -78,5 +79,6 @@ export async function POST(request: NextRequest) {
     if (msg.startsWith("Захиалга илгээхэд")) console.error("[reservations]", m);
     return Response.json({ error: msg }, { status: 400 });
   }
+  after(() => notifyNewReservation(data));
   return Response.json({ reservation: data }, { status: 201 });
 }
