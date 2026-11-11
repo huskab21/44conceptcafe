@@ -1,9 +1,10 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AdminGate, type AdminHeaders } from "@/components/admin/admin-gate";
 import { printReceipt } from "@/components/admin/print-receipt";
+import { btPrinterName, btSupported, connectBtPrinter, onBtChange } from "@/components/admin/bt-printer";
 import { formatPrice } from "@/lib/site";
 
 type Order = {
@@ -76,6 +77,36 @@ function Board({ auth, logout }: { auth: AdminHeaders; logout: () => void }) {
   }
   const seen = useRef<Set<string> | null>(null);
 
+  const btName = useSyncExternalStore(onBtChange, btPrinterName, () => null);
+  const canBt = useSyncExternalStore(onBtChange, btSupported, () => false);
+  const [btError, setBtError] = useState<string | null>(null);
+  async function connectPrinter() {
+    setBtError(null);
+    try {
+      await connectBtPrinter();
+      if (!autoPrintRef.current) toggleAutoPrint();
+    } catch (e) {
+      if (e instanceof Error && e.name !== "NotFoundError") setBtError(e.message); // NotFoundError = picker closed
+    }
+  }
+  // Keep the screen on while a printer is connected — a sleeping phone stops polling and printing.
+  useEffect(() => {
+    if (!btName || !("wakeLock" in navigator)) return;
+    let lock: { release(): Promise<void> } | null = null;
+    const take = () =>
+      (navigator as Navigator & { wakeLock: { request(t: "screen"): Promise<{ release(): Promise<void> }> } }).wakeLock
+        .request("screen")
+        .then((l) => (lock = l))
+        .catch(() => null);
+    take();
+    const onVis = () => document.visibilityState === "visible" && take();
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      document.removeEventListener("visibilitychange", onVis);
+      lock?.release().catch(() => null);
+    };
+  }, [btName]);
+
   const load = useCallback(async () => {
     const res = await fetch("/api/orders", { headers: await auth(), cache: "no-store" }).catch(() => null);
     if (!res) return setError("Сервертэй холбогдож чадсангүй.");
@@ -146,6 +177,15 @@ function Board({ auth, logout }: { auth: AdminHeaders; logout: () => void }) {
           >
             🖨 Авто хэвлэх {autoPrint ? "ON" : "OFF"}
           </button>
+          {btName ? (
+            <span className="rounded-full border border-gold/40 px-4 py-2 text-gold">🔵 {btName}</span>
+          ) : (
+            canBt && (
+              <button type="button" onClick={connectPrinter} className="rounded-full border border-white/20 px-4 py-2 text-cream hover:border-gold">
+                🔵 Принтер холбох
+              </button>
+            )
+          )}
           <button type="button" onClick={logout} className="rounded-full px-3 py-2 text-muted hover:text-cream">
             Гарах
           </button>
@@ -153,6 +193,7 @@ function Board({ auth, logout }: { auth: AdminHeaders; logout: () => void }) {
       </header>
 
       {error && <p role="alert" className="mt-4 text-sm text-danger">{error}</p>}
+      {btError && <p role="alert" className="mt-4 text-sm text-danger">{btError}</p>}
 
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {COLUMNS.map((col) => {

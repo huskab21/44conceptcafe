@@ -1,5 +1,7 @@
 "use client";
 
+import { btPrint, btPrinterName } from "./bt-printer";
+
 type PrintableOrder = {
   number: number;
   table_no: number;
@@ -16,11 +18,24 @@ const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&
 const money = (n: number) => `${n.toLocaleString("en-US")}₮`;
 
 /**
- * Prints an 80mm kitchen/bar ticket through a hidden iframe.
+ * Prints a receipt: through the connected Bluetooth printer if there is one (see bt-printer.ts), otherwise as an
+ * 80mm ticket through a hidden iframe and the browser's print dialog.
  * To print straight to the connected receipt printer without the dialog, run Chrome on the bar computer with
  * `--kiosk-printing` and set that printer as the system default.
  */
 export function printReceipt(o: PrintableOrder) {
+  // A Bluetooth receipt printer connected on /admin takes priority — prints straight away, no dialog.
+  if (btPrinterName()) {
+    btPrint(o).catch((e) => {
+      console.error("[print] bluetooth failed, falling back to the print dialog:", e);
+      printViaDialog(o);
+    });
+    return;
+  }
+  printViaDialog(o);
+}
+
+function printViaDialog(o: PrintableOrder) {
   const when = new Date(o.created_at).toLocaleString("mn-MN", { hour12: false, month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
   const rows = o.lines
     .map((l) => `<tr><td class="q">${l.qty}×</td><td>${esc(l.name)}</td><td class="r">${money(l.price * l.qty)}</td></tr>`)
