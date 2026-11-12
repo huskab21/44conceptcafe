@@ -2,6 +2,7 @@ import "server-only";
 import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { getServerSupabase } from "./supabase";
+import { clientIp, hit, peek } from "./rate-limit";
 
 /* ───────────── types ───────────── */
 
@@ -70,13 +71,20 @@ export function isValidTable(table: number, key: string | null | undefined): boo
  *     (only settable with the service key / SQL — users can't grant it to themselves). See supabase/schema.sql.
  *  2. `x-admin-key: <ADMIN_KEY>` — shared staff key, e.g. for a tablet at the bar.
  */
+const ADMIN_FAIL_LIMIT = 10;
+const ADMIN_FAIL_WINDOW = 15 * 60_000;
+
 export async function isAdmin(request: Request): Promise<boolean> {
   const expected = process.env.ADMIN_KEY;
   const got = request.headers.get("x-admin-key");
   if (expected && got) {
+    // Brute-force guard: 10 wrong keys per IP in 15 min locks that IP out of key login until the window passes.
+    const lockKey = `admin-fail:${clientIp(request)}`;
+    if (!peek(lockKey, ADMIN_FAIL_LIMIT, ADMIN_FAIL_WINDOW).ok) return false;
     const a = Buffer.from(expected);
     const b = Buffer.from(got);
     if (a.length === b.length && timingSafeEqual(a, b)) return true;
+    hit(lockKey, ADMIN_FAIL_LIMIT, ADMIN_FAIL_WINDOW);
   }
 
   const bearer = request.headers.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1];

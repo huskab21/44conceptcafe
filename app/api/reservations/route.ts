@@ -6,16 +6,7 @@ import { createCheckout, wireEnabled } from "@/lib/wire";
 import { userIdFrom } from "@/lib/orders";
 import { reservation as rules, timeSlots } from "@/lib/site";
 import { adminDb } from "@/lib/supabase-admin";
-
-/** Light per-instance throttle so the open (no-login) form can't be flooded: 5 bookings per IP per 10 minutes. */
-const hits = new Map<string, number[]>();
-function throttled(ip: string) {
-  const now = Date.now();
-  const recent = (hits.get(ip) ?? []).filter((t) => now - t < 10 * 60_000);
-  recent.push(now);
-  hits.set(ip, recent);
-  return recent.length > 5;
-}
+import { clientIp, hit, tooMany } from "@/lib/rate-limit";
 
 const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
 
@@ -29,8 +20,9 @@ const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
 export async function POST(request: NextRequest) {
   if (!adminDb) return Response.json({ error: "Захиалга түр ажиллахгүй байна." }, { status: 503 });
 
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
-  if (throttled(ip)) return Response.json({ error: "Хэт олон хүсэлт. Түр хүлээгээд дахин оролдоно уу." }, { status: 429 });
+  // The open (no-login) form can't be flooded: 5 bookings per IP per 10 minutes.
+  const limit = hit(`reserve:${clientIp(request)}`, 5, 10 * 60_000);
+  if (!limit.ok) return tooMany(limit, "Хэт олон хүсэлт. Түр хүлээгээд дахин оролдоно уу.");
 
   let b: Record<string, unknown>;
   try {
