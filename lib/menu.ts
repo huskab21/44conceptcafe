@@ -1,5 +1,5 @@
 import { cacheLife, cacheTag } from "next/cache";
-import { fallbackMenu, type MenuItem } from "./menu-data";
+import { fallbackCategories, fallbackMenu, type Category, type MenuItem } from "./menu-data";
 import { getServerSupabase } from "./supabase";
 
 /**
@@ -26,4 +26,21 @@ export async function getMenu(): Promise<MenuItem[]> {
     return fallbackMenu;
   }
   return data as MenuItem[];
+}
+
+/** Menu categories from Supabase `menu_categories` (edited on /admin/menu), falling back to the built-in list. */
+export async function getCategories(): Promise<Category[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("menu");
+
+  const supabase = getServerSupabase();
+  if (!supabase) return fallbackCategories;
+  const { data, error } = await supabase.from("menu_categories").select("id, label, en, sort_order").order("sort_order", { ascending: true });
+  if (error || !data || data.length === 0) {
+    // e.g. supabase/menu-categories.sql not run yet
+    if (error) console.warn("[menu] categories: using built-in list:", error.message);
+    return fallbackCategories;
+  }
+  return data as Category[];
 }

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
-import { categories, type MenuItem } from "@/lib/menu-data";
+import type { Category, MenuItem } from "@/lib/menu-data";
 import { BEER_PROMO, totals } from "@/lib/promo";
 import { useAuth } from "@/components/providers/auth-provider";
 import { authHeader } from "@/lib/backend";
@@ -50,7 +50,7 @@ function Stepper({ qty, onChange, name }: { qty: number; onChange: (q: number) =
   );
 }
 
-export function QrMenu({ table, tableKey, items }: { table: number; tableKey: string; items: MenuItem[] }) {
+export function QrMenu({ table, tableKey, items, categories }: { table: number; tableKey: string; items: MenuItem[]; categories: Category[] }) {
   const storeKey = `h44_order_t${table}`;
   const { user } = useAuth();
   const [cart, setCart] = useState<Record<string, number>>({});
@@ -62,7 +62,7 @@ export function QrMenu({ table, tableKey, items }: { table: number; tableKey: st
 
   const groups = useMemo(
     () => categories.map((c) => ({ ...c, items: items.filter((i) => i.category === c.id) })).filter((g) => g.items.length > 0),
-    [items],
+    [items, categories],
   );
   const byId = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
   const lines = Object.entries(cart)

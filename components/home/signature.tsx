@@ -4,11 +4,11 @@ import Image from "next/image";
 import { motion, useMotionTemplate, useMotionValue, useMotionValueEvent, useScroll, useSpring, useTransform } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { Eyebrow, Reveal } from "@/components/ui/motion";
-import { categories, type MenuItem } from "@/lib/menu-data";
+import type { Category, MenuItem } from "@/lib/menu-data";
 import { formatPrice } from "@/lib/site";
 
 /** Product card that leans toward the cursor with a moving glare. */
-function TiltCard({ item, index }: { item: MenuItem; index: number }) {
+function TiltCard({ item, index, tag }: { item: MenuItem; index: number; tag?: string }) {
   const px = useMotionValue(0.5);
   const py = useMotionValue(0.5);
   const sx = useSpring(px, { stiffness: 160, damping: 18 });
@@ -50,7 +50,7 @@ function TiltCard({ item, index }: { item: MenuItem; index: number }) {
           </span>
         </div>
         <div className="relative flex flex-1 flex-col p-5" style={{ transform: "translateZ(40px)" }}>
-          <p className="font-mono text-[0.65rem] tracking-widest text-gold uppercase">{categories.find((c) => c.id === item.category)?.en}</p>
+          <p className="font-mono text-[0.65rem] tracking-widest text-gold uppercase">{tag}</p>
           <h3 className="mt-2 font-display text-2xl text-cream">{item.name}</h3>
           <p className="mt-2 text-sm text-cream-dim">{item.description}</p>
           <div className="mt-auto flex items-center justify-between border-t border-white/10 pt-4">
@@ -67,7 +67,7 @@ function TiltCard({ item, index }: { item: MenuItem; index: number }) {
 }
 
 /** Featured drinks & bites on a horizontal track that scrolls sideways while the section is pinned. */
-export function Signature({ items }: { items: MenuItem[] }) {
+export function Signature({ items, categories }: { items: MenuItem[]; categories: Category[] }) {
   const section = useRef<HTMLElement>(null);
   const track = useRef<HTMLDivElement>(null);
   const [distance, setDistance] = useState(0);
@@ -122,7 +122,7 @@ export function Signature({ items }: { items: MenuItem[] }) {
         <motion.div ref={track} style={{ x: smoothX }} className="mt-12 flex w-max gap-4 px-5 will-change-transform sm:px-8 lg:gap-5 lg:px-10">
           {items.map((item, i) => (
             <div key={item.id} className="w-[72vw] shrink-0 sm:w-[44vw] lg:w-[24vw] xl:w-[21vw]">
-              <TiltCard item={item} index={i} />
+              <TiltCard item={item} index={i} tag={categories.find((c) => c.id === item.category)?.en} />
             </div>
           ))}
           {/* closing card */}

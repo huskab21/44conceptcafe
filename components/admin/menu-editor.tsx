@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { AdminGate, type AdminHeaders } from "@/components/admin/admin-gate";
 import { Field, ImageField, inputCls, PageHead, SaveBar, Toggle, useAdminList } from "@/components/admin/admin-ui";
-import { categories, type MenuCategory, type MenuItem } from "@/lib/menu-data";
+import { fallbackCategories, type Category, type MenuCategory, type MenuItem } from "@/lib/menu-data";
 import { formatPrice } from "@/lib/site";
 import { ReceiptSettings } from "@/components/admin/receipt-settings";
+import { CategoryManager } from "@/components/admin/category-manager";
 
 type Draft = Omit<MenuItem, "id">;
 
@@ -23,12 +24,14 @@ const blank = (category: MenuCategory): Draft => ({
 
 function ItemForm({
   auth,
+  categories,
   initial,
   onSave,
   onDelete,
   isNew = false,
 }: {
   auth: AdminHeaders;
+  categories: Category[];
   initial: Draft;
   onSave: (d: Draft) => Promise<void>;
   onDelete?: () => Promise<void>;
@@ -76,6 +79,7 @@ function ItemForm({
           </Field>
           <Field label="Ангилал">
             <select className={inputCls} value={d.category} onChange={(e) => set("category", e.target.value as MenuCategory)}>
+              {!categories.some((c) => c.id === d.category) && <option value={d.category}>{d.category}</option>}
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.label}
@@ -107,6 +111,10 @@ function ItemForm({
 
 function Editor({ auth }: { auth: AdminHeaders }) {
   const { items, error, save, create, remove } = useAdminList<MenuItem>(auth, "menu");
+  const cats = useAdminList<Category>(auth, "categories");
+  // Until supabase/menu-categories.sql is run the built-in list is used.
+  const categories = cats.items ?? fallbackCategories;
+  const counts = Object.fromEntries(categories.map((c) => [c.id, (items ?? []).filter((i) => i.category === c.id).length]));
   const [cat, setCat] = useState<MenuCategory | "all">("all");
   const [adding, setAdding] = useState(false);
 
@@ -122,12 +130,15 @@ function Editor({ auth }: { auth: AdminHeaders }) {
 
       <ReceiptSettings auth={auth} />
 
+      <CategoryManager categories={cats.items} counts={counts} error={cats.error} save={cats.save} create={cats.create} remove={cats.remove} />
+
       {adding && (
         <section className="mt-6">
           <ItemForm
             auth={auth}
             isNew
-            initial={blank(cat === "all" ? "hot" : cat)}
+            categories={categories}
+            initial={blank(cat === "all" ? (categories[0]?.id ?? "hot") : cat)}
             onSave={async (d) => {
               await create(d);
               setAdding(false);
@@ -145,7 +156,7 @@ function Editor({ auth }: { auth: AdminHeaders }) {
             className={`shrink-0 rounded-full px-4 py-2 font-mono text-[0.62rem] tracking-[0.15em] uppercase ${cat === c.id ? "bg-cream text-ink" : "border border-white/15 text-cream"}`}
           >
             {c.label}
-            <span className="ml-1.5 opacity-60">{(items ?? []).filter((i) => c.id === "all" || i.category === c.id).length}</span>
+            <span className="ml-1.5 opacity-60">{c.id === "all" ? (items ?? []).length : counts[c.id]}</span>
           </button>
         ))}
       </nav>
@@ -160,6 +171,7 @@ function Editor({ auth }: { auth: AdminHeaders }) {
             <ItemForm
               key={id}
               auth={auth}
+              categories={categories}
               initial={rest}
               onSave={(d) => save(id, d)}
               onDelete={() => remove(id)}

@@ -15,7 +15,7 @@ export async function adminFetch<T>(auth: AdminHeaders, url: string, init: Reque
 }
 
 /** CRUD list for /api/admin/<kind>. */
-export function useAdminList<T extends { id: string }>(auth: AdminHeaders, kind: "menu" | "wear" | "gallery") {
+export function useAdminList<T extends { id: string }>(auth: AdminHeaders, kind: "menu" | "wear" | "gallery" | "categories") {
   const [items, setItems] = useState<T[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const base = `/api/admin/${kind}`;

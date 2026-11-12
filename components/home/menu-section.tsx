@@ -4,13 +4,13 @@ import { motion, useInView } from "motion/react";
 import { useRef, useState } from "react";
 import { Eyebrow } from "@/components/ui/motion";
 import { Barcode, Dashed, Printer, ReceiptPaper } from "@/components/ui/receipt";
-import { categories, type MenuCategory, type MenuItem } from "@/lib/menu-data";
+import type { Category, MenuCategory, MenuItem } from "@/lib/menu-data";
 import { formatPrice, site } from "@/lib/site";
 import { LogoMark } from "@/components/logo";
 import type { ReceiptSettings } from "@/lib/settings-db";
 
 /** Menu printed as a thermal receipt. Picking a category re-prints it. */
-export function MenuSection({ items, receipt }: { items: MenuItem[]; receipt: ReceiptSettings }) {
+export function MenuSection({ items, categories, receipt }: { items: MenuItem[]; categories: Category[]; receipt: ReceiptSettings }) {
   const available = categories.filter((c) => items.some((i) => i.category === c.id));
   const [active, setActive] = useState<MenuCategory>(available.find((c) => c.id === "hot")?.id ?? available[0]?.id ?? "hot");
   const [printing, setPrinting] = useState(true);
@@ -18,7 +18,7 @@ export function MenuSection({ items, receipt }: { items: MenuItem[]; receipt: Re
   const inView = useInView(ref, { once: true, margin: "-20% 0px" });
 
   const list = items.filter((i) => i.category === active);
-  const cat = categories.find((c) => c.id === active)!;
+  const cat = categories.find((c) => c.id === active) ?? { label: active, en: "" };
 
   function choose(id: MenuCategory) {
     if (id === active) return;
@@ -53,7 +53,7 @@ export function MenuSection({ items, receipt }: { items: MenuItem[]; receipt: Re
                     onClick={() => choose(c.id)}
                     className="group flex w-full items-center gap-5 py-4 text-left"
                   >
-                    <span className="font-mono text-xs text-muted">0{i + 1}</span>
+                    <span className="font-mono text-xs text-muted">{String(i + 1).padStart(2, "0")}</span>
                     <span
                       className={`font-display text-2xl transition-all duration-300 sm:text-3xl ${
                         isActive ? "translate-x-2 text-cream" : "text-cream/40 group-hover:text-cream/80"

@@ -3,7 +3,10 @@
 // (see supabase/schema.sql – it seeds the same items). Prices are in MNT.
 // NOTE: Names and prices below are placeholders until the café confirms its real menu.
 
-export type MenuCategory = "hot" | "cold" | "signature" | "gelato" | "dessert" | "beer";
+/** Category id (e.g. "hot"). Categories are edited on /admin/menu and stored in Supabase `menu_categories`. */
+export type MenuCategory = string;
+
+export type Category = { id: MenuCategory; label: string; en: string; sort_order: number };
 
 export type MenuItem = {
   id: string;
@@ -18,13 +21,14 @@ export type MenuItem = {
   sort_order: number;
 };
 
-export const categories: { id: MenuCategory; label: string; en: string }[] = [
-  { id: "signature", label: "Онцлох", en: "Signature" },
-  { id: "hot", label: "Халуун кофе", en: "Hot Coffee" },
-  { id: "cold", label: "Хүйтэн", en: "Iced" },
-  { id: "gelato", label: "Желато", en: "Gelato" },
-  { id: "dessert", label: "Амттан", en: "Dessert" },
-  { id: "beer", label: "Пиво", en: "Beer" },
+/** Built-in categories, used until supabase/menu-categories.sql is run (or if Supabase is unreachable). */
+export const fallbackCategories: Category[] = [
+  { id: "signature", label: "Онцлох", en: "Signature", sort_order: 10 },
+  { id: "hot", label: "Халуун кофе", en: "Hot Coffee", sort_order: 20 },
+  { id: "cold", label: "Хүйтэн", en: "Iced", sort_order: 30 },
+  { id: "gelato", label: "Желато", en: "Gelato", sort_order: 40 },
+  { id: "dessert", label: "Амттан", en: "Dessert", sort_order: 50 },
+  { id: "beer", label: "Пиво", en: "Beer", sort_order: 60 },
 ];
 
 type Seed = Omit<MenuItem, "id" | "is_available" | "sort_order" | "is_signature"> & {

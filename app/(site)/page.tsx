@@ -11,11 +11,11 @@ import { ReserveCta } from "@/components/home/reserve-cta";
 import { ReviewDeal } from "@/components/home/review-deal";
 import { Signature } from "@/components/home/signature";
 import { Visit } from "@/components/home/visit";
-import { getMenu } from "@/lib/menu";
+import { getCategories, getMenu } from "@/lib/menu";
 import { getWear } from "@/lib/wear-db";
 
 export default async function Home() {
-  const [menu, wear, gallery, receipt] = await Promise.all([getMenu(), getWear(), getGallery(), getReceiptSettings()]);
+  const [menu, categories, wear, gallery, receipt] = await Promise.all([getMenu(), getCategories(), getWear(), getGallery(), getReceiptSettings()]);
   const signature = menu.filter((m) => m.is_signature);
   // Signature drinks first, then a curated pick from the rest of the menu for the horizontal showcase.
   const picks = ["Iced Latte", "Mocha Frappé", "V60 Pour Over", "Cappuccino", "44 Sundae", "Gelato · Double", "Butter Croissant", "Chocolate Cake"];
@@ -25,8 +25,8 @@ export default async function Home() {
     <main>
       <Hero featured={signature[0]} />
       <Marquee />
-      {featured.length > 0 && <Signature items={featured} />}
-      <MenuSection items={menu} receipt={receipt} />
+      {featured.length > 0 && <Signature items={featured} categories={categories} />}
+      <MenuSection items={menu} categories={categories} receipt={receipt} />
       <BeerShowcase />
       <HoursClock />
       {gallery.length > 0 && <Gallery images={gallery} />}

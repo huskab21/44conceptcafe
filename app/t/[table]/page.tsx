@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { QrMenu } from "@/components/qr/qr-menu";
-import { getMenu } from "@/lib/menu";
+import { getCategories, getMenu } from "@/lib/menu";
 import { isValidTable } from "@/lib/orders";
 import { site } from "@/lib/site";
 
@@ -36,6 +36,6 @@ async function TableMenu({ params, searchParams }: PageProps<"/t/[table]">) {
     );
   }
 
-  const menu = await getMenu();
-  return <QrMenu table={table} tableKey={key} items={menu} />;
+  const [menu, categories] = await Promise.all([getMenu(), getCategories()]);
+  return <QrMenu table={table} tableKey={key} items={menu} categories={categories} />;
 }
