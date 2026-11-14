@@ -65,6 +65,7 @@ export function parseMenu(b: Record<string, unknown>) {
     image: image(b.image),
     is_signature: bool(b.is_signature),
     is_available: bool(b.is_available),
+    evening: bool(b.evening),
     sort_order: int(b.sort_order, -100000, 100000),
   });
 }

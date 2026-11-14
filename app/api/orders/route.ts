@@ -5,6 +5,7 @@ import { randomBytes } from "node:crypto";
 import { wireEnabled, createCheckout } from "@/lib/wire";
 import { attachInvoice, createOrder, isAdmin, isValidTable, listOrders, setOrderStatus, userIdFrom, type OrderLine } from "@/lib/orders";
 import { totals } from "@/lib/promo";
+import { EVENING, isEvening, orderableNow, pad } from "@/lib/evening";
 
 type Body = { table?: unknown; key?: unknown; items?: unknown; note?: unknown };
 
@@ -36,6 +37,20 @@ export async function POST(request: NextRequest) {
   if (merged.size > 30) return Response.json({ error: "Хэт олон бараа байна." }, { status: 400 });
 
   const lines = [...merged].map(([id, qty]) => ({ item: byId.get(id)!, qty }));
+
+  // Evening menu: after 18:00 coffee, matcha etc. can't be ordered (the QR menu hides them; this catches stale carts).
+  const evening = isEvening();
+  const dayOnly = lines.filter((l) => !orderableNow(l.item, evening));
+  if (dayOnly.length > 0) {
+    return Response.json(
+      {
+        error: `${pad(EVENING.fromHour)}-с хойш зөвхөн оройн цэсээс захиална. Сагснаас хасна уу: ${dayOnly.map((l) => l.item.name).join(", ")}.`,
+        dayOnly: dayOnly.map((l) => l.item.id),
+      },
+      { status: 409 },
+    );
+  }
+
   const t = totals(lines);
   const note = typeof body.note === "string" ? body.note.trim().slice(0, 200) || null : null;
 

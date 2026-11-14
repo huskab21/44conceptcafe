@@ -18,6 +18,8 @@ export type MenuItem = {
   image: string;
   is_signature: boolean;
   is_available: boolean;
+  /** Can be ordered after 18:00 (alcohol, soda…). Missing until supabase/evening-menu.sql is run. */
+  evening?: boolean;
   sort_order: number;
 };
 
@@ -76,6 +78,7 @@ export const fallbackMenu: MenuItem[] = seed.map((item, i) => ({
   id: `seed-${i + 1}`,
   is_signature: false,
   is_available: true,
+  evening: item.category === "beer",
   sort_order: i + 1,
   ...item,
 }));

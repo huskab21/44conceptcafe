@@ -5,6 +5,7 @@ import { AdminGate, type AdminHeaders } from "@/components/admin/admin-gate";
 import { Field, ImageField, inputCls, PageHead, SaveBar, Toggle, useAdminList } from "@/components/admin/admin-ui";
 import { fallbackCategories, type Category, type MenuCategory, type MenuItem } from "@/lib/menu-data";
 import { formatPrice } from "@/lib/site";
+import { EVENING, pad } from "@/lib/evening";
 import { ReceiptSettings } from "@/components/admin/receipt-settings";
 import { CategoryManager } from "@/components/admin/category-manager";
 
@@ -94,6 +95,11 @@ function ItemForm({
         <div className="flex flex-wrap gap-2">
           <Toggle checked={d.is_available} onChange={(v) => set("is_available", v)} label={d.is_available ? "Зарагдаж байна" : "Нуусан"} />
           <Toggle checked={d.is_signature} onChange={(v) => set("is_signature", v)} label="Онцлох" />
+          <Toggle
+            checked={d.evening ?? false}
+            onChange={(v) => set("evening", v)}
+            label={d.evening ? `☾ Орой ч зарна · ${pad(EVENING.fromHour)}-с хойш` : `☀ Зөвхөн өдөр · ${pad(EVENING.fromHour)} хүртэл`}
+          />
         </div>
         {error && <p role="alert" className="text-sm text-danger">{error}</p>}
         {saved && !dirty && !isNew && <p className="text-xs text-success">✓ Хадгалагдлаа. Сайт дээр шууд шинэчлэгдэнэ.</p>}
@@ -122,7 +128,10 @@ function Editor({ auth }: { auth: AdminHeaders }) {
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
-      <PageHead title="Меню" sub="Зураг, нэр, тайлбар, үнийг энд засна. Хадгалмагц сайт болон ширээний QR меню шууд шинэчлэгдэнэ.">
+      <PageHead
+        title="Меню"
+        sub={`Зураг, нэр, тайлбар, үнийг энд засна. Хадгалмагц сайт болон ширээний QR меню шууд шинэчлэгдэнэ. ${pad(EVENING.fromHour)}-с хойш QR менюд зөвхөн “☾ Орой ч зарна” гэж тэмдэглэсэн бараа (архи, ундаа) харагдана.`}
+      >
         <button type="button" onClick={() => setAdding((v) => !v)} className="rounded-full bg-gold px-5 py-2.5 font-mono text-[0.65rem] tracking-[0.15em] text-ink uppercase">
           {adding ? "Хаах" : "+ Шинэ бүтээгдэхүүн"}
         </button>

@@ -2,13 +2,21 @@
 
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { Category, MenuItem } from "@/lib/menu-data";
 import { BEER_PROMO, totals } from "@/lib/promo";
 import { useAuth } from "@/components/providers/auth-provider";
 import { authHeader } from "@/lib/backend";
 import { formatPrice, site } from "@/lib/site";
 import { Logo } from "@/components/logo";
+import { EVENING, isEvening, orderableNow, pad } from "@/lib/evening";
+
+/** Re-checks the clock every 30s, so the evening menu switches on at 18:00 without a reload. */
+function subscribeClock(cb: () => void) {
+  const id = setInterval(cb, 30_000);
+  return () => clearInterval(id);
+}
+const useEvening = () => useSyncExternalStore(subscribeClock, () => isEvening(), () => isEvening());
 
 type PlacedOrder = { id: string; number: number; total: number; status: string; pay_url?: string | null; paid_at?: string | null };
 
@@ -60,14 +68,20 @@ export function QrMenu({ table, tableKey, items, categories }: { table: number; 
   const [error, setError] = useState<string | null>(null);
   const [placed, setPlaced] = useState<PlacedOrder | null>(null);
 
+  const evening = useEvening();
+  // After 18:00 only the evening menu (alcohol, soda…) is shown; empty categories drop out too.
   const groups = useMemo(
-    () => categories.map((c) => ({ ...c, items: items.filter((i) => i.category === c.id) })).filter((g) => g.items.length > 0),
-    [items, categories],
+    () =>
+      categories
+        .map((c) => ({ ...c, items: items.filter((i) => i.category === c.id && orderableNow(i, evening)) }))
+        .filter((g) => g.items.length > 0),
+    [items, categories, evening],
   );
   const byId = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
-  const lines = Object.entries(cart)
-    .filter(([id, q]) => q > 0 && byId.has(id))
-    .map(([id, qty]) => ({ item: byId.get(id)!, qty }));
+  const inCart = Object.entries(cart).filter(([id, q]) => q > 0 && byId.has(id));
+  const lines = inCart.filter(([id]) => orderableNow(byId.get(id)!, evening)).map(([id, qty]) => ({ item: byId.get(id)!, qty }));
+  // Picked before 18:00 and now off the menu — left out of the order, with a note in the cart.
+  const dropped = inCart.filter(([id]) => !orderableNow(byId.get(id)!, evening)).map(([id]) => byId.get(id)!.name);
   const count = lines.reduce((s, l) => s + l.qty, 0);
   const t = totals(lines);
   const beerCount = lines.filter((l) => l.item.category === "beer").reduce((s, l) => s + l.qty, 0);
@@ -114,7 +128,9 @@ export function QrMenu({ table, tableKey, items, categories }: { table: number; 
         headers: { "content-type": "application/json", ...(await authHeader()) },
         body: JSON.stringify({ table, key: tableKey, note, items: lines.map((l) => ({ id: l.item.id, qty: l.qty })) }),
       });
-      const data = (await res.json()) as { order?: PlacedOrder; error?: string };
+      const data = (await res.json()) as { order?: PlacedOrder; error?: string; dayOnly?: string[] };
+      // Evening menu kicked in on the server first: take those items out so the guest can just tap again.
+      if (data.dayOnly?.length) setCart((c) => Object.fromEntries(Object.entries(c).filter(([id]) => !data.dayOnly!.includes(id))));
       if (!res.ok || !data.order) throw new Error(data.error ?? "Алдаа гарлаа.");
       const p: PlacedOrder = {
         id: data.order.id,
@@ -221,6 +237,32 @@ export function QrMenu({ table, tableKey, items, categories }: { table: number; 
           Юу <em>уух</em> вэ?
         </h1>
         <p className="mt-3 text-sm text-cream-dim">Сонгоод захиалаарай — ширээнд тань авчирна.</p>
+
+        <AnimatePresence>
+          {evening && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              className="relative mt-6 flex items-center gap-4 overflow-hidden rounded-2xl border border-gold/30 bg-[radial-gradient(circle_at_12%_30%,rgba(217,164,108,0.22),transparent_55%)] p-4"
+            >
+              {/* a few stars */}
+              <span aria-hidden className="pointer-events-none absolute top-3 right-6 size-1 rounded-full bg-cream/60" />
+              <span aria-hidden className="pointer-events-none absolute top-8 right-14 size-0.5 rounded-full bg-cream/40" />
+              <span aria-hidden className="pointer-events-none absolute right-24 bottom-4 size-0.5 rounded-full bg-cream/50" />
+              <span className="grid size-14 shrink-0 place-items-center rounded-full border border-gold/40 bg-ink">
+                <svg viewBox="0 0 24 24" className="size-7 text-gold" fill="currentColor" aria-hidden>
+                  <path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1Z" />
+                </svg>
+              </span>
+              <span>
+                <span className="block font-mono text-[0.62rem] tracking-[0.2em] text-gold uppercase">Оройн цэс · {pad(EVENING.fromHour)}-с</span>
+                <span className="mt-1 block text-sm leading-snug text-cream">Пиво, коктейль, шот, ундаа 🥂</span>
+                <span className="mt-0.5 block text-xs text-cream-dim">Кофе, матча маргааш өглөө дахин ☕</span>
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {BEER_PROMO && <a
           href="#beer"
@@ -338,6 +380,12 @@ export function QrMenu({ table, tableKey, items, categories }: { table: number; 
                   </li>
                 ))}
               </ul>
+
+              {dropped.length > 0 && (
+                <p className="mt-3 rounded-xl border border-gold/20 bg-gold/5 px-4 py-3 text-xs leading-relaxed text-cream-dim">
+                  ☾ {pad(EVENING.fromHour)}-с хойш оройн цэс эхэлсэн тул <span className="text-cream">{dropped.join(", ")}</span> захиалгад орохгүй.
+                </p>
+              )}
 
               {BEER_PROMO && beerCount > 0 && t.free === 0 && (
                 <p className="mt-3 rounded-xl bg-gold/10 px-4 py-3 text-xs text-gold-soft">
